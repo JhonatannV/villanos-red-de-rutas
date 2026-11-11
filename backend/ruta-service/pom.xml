@@ -29,5 +29,12 @@
             <version>5.11.3</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- JNA: permite que Java invoque funciones escritas en C -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.15.0</version>
+        </dependency>
     </dependencies>
 </project>
