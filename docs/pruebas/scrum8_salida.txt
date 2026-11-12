@@ -1,0 +1,51 @@
+SCRUM-7 [RN-03] Destino inalcanzable
+  OK     Grafo partido en dos: 0 -> 3  (devolvió -1)
+  OK     Grafo partido en dos, al revés: 3 -> 0  (devolvió -1)
+  OK     Parada aislada como destino: 0 -> 4  (devolvió -1)
+  OK     Parada aislada como origen: 4 -> 0  (devolvió -1)
+  OK     Red sin tramos: 0 -> 2  (devolvió -1)
+  OK     Isla con ciclo 0-1-2-0, destino en otra isla: 0 -> 5  (devolvió -1)
+  OK     Red 40: Terminal -> Coliseo Benicio (control RF-03 caso 1)  (devolvió 4)
+  OK     Red 40: Hospital -> Barrio Farfán (control RF-03 caso 2)  (devolvió 5)
+  OK     Red 40: Terminal -> Terminal Aérea, todo abierto  (devolvió 9)
+  OK     Red 40 con el tramo 90 cerrado: Terminal -> Terminal Aérea  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Zona Rural La Marina -> Salida Sur  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Peaje -> Zona Rural (misma isla, sí hay ruta)  (devolvió 2)
+
+SCRUM-7 [RN-03] Tiempo de una consulta sin ruta (400 paradas en dos islas)
+  Con ruta (misma isla):       18.23 us por consulta
+  Sin ruta (otra isla):        29.38 us por consulta
+  OK     Sin ruta tarda 1.6 veces una consulta normal: mismo orden de tiempo
+
+SCRUM-8 [RN-04] Origen igual a destino y redes mínimas
+  OK     Origen igual a destino (Universidad -> Universidad)  (devolvió 1)
+  OK     Origen igual a destino en una parada sin tramos  (devolvió 1)
+  OK     Red de una sola parada: 0 -> 0  (devolvió 1)
+  OK     Red de una sola parada: 0 -> 1 (no existe)  (devolvió -2)
+
+SCRUM-8 [RN-04] Tramos de costo cero, repetidos y bucles
+  OK     Tramo de costo 0 en el camino: 0 -(0)- 1 -(4)- 2  (devolvió 3)
+  OK     Todo cuesta 0: gana el camino con menos paradas  (devolvió 2)
+  OK     Dos tramos entre las mismas paradas (9 y 2): usa el barato  (devolvió 2)
+  OK     Tramo que sale y llega a la misma parada (1-1)  (devolvió 3)
+  OK     Costo total que no cabe en un int  (devolvió -5)
+
+SCRUM-8 [RN-04] Índices fuera de rango (código -2, sin segmentation fault)
+  OK     Destino 99 cuando hay 5 paradas  (devolvió -2)
+  OK     Origen 99 cuando hay 5 paradas  (devolvió -2)
+  OK     Destino igual a num_paradas (5 cuando van de 0 a 4)  (devolvió -2)
+  OK     Origen negativo (-1)  (devolvió -2)
+  OK     Origen 99 y destino 99 (iguales, pero no existen)  (devolvió -2)
+  OK     Un tramo apunta a la parada 7 en una red de 3  (devolvió -2)
+  OK     Un tramo sale de la parada -4  (devolvió -2)
+
+SCRUM-8 [RN-04] Argumentos inválidos (código -3, sin segmentation fault)
+  OK     Peso negativo  (devolvió -3)
+  OK     Red de 0 paradas  (devolvió -3)
+  OK     Cantidad de paradas negativa  (devolvió -3)
+  OK     Cantidad de tramos negativa  (devolvió -3)
+  OK     Hay tramos pero los arreglos son nulos  (devolvió -3)
+  OK     camino_salida nulo  (devolvió -3)
+  OK     costo_salida nulo  (devolvió -3)
+
+36 pruebas pasaron, 0 fallaron  (0.24 s)
