@@ -1,0 +1,23 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: ruta-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  algorithm:
+    mode: ${ALGORITHM_MODE:native}
+
+services:
+  grafo-service:
+    url: ${GRAFO_SERVICE_URL:http://localhost:8081}
