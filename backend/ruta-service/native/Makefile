@@ -2,7 +2,7 @@
 #   make             compila libgrafo.so (la que carga Java con JNA) y el programa de prueba
 #   make prueba      corre la prueba de los grafos de referencia (SCRUM-5)
 #   make medicion    mide montículo vs. búsqueda lineal con 50, 150 y 400 paradas (SCRUM-6)
-#   make test        corre la suite de pruebas: destino inalcanzable (SCRUM-7)
+#   make test        corre la suite de pruebas: destino inalcanzable (SCRUM-7) y casos degenerados (SCRUM-8)
 #   make clean       borra lo compilado
 CC     = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11

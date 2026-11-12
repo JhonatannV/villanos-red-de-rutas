@@ -7,7 +7,7 @@
 | `grafo.h` | El contrato con Java: firma de `dijkstra()` y códigos de error |
 | `dijkstra.c` | Dijkstra con cola de prioridad (montículo binario) sobre arreglos paralelos |
 | `main.c` | Prueba de consola (SCRUM-5): grafo guía de 5 paradas (A → B → D → E = 11) y grafo de referencia de 7 paradas (Terminal → … → Aeropuerto = 14) |
-| `pruebas.c` | Suite de pruebas (`make test`), sin Java ni Docker. Por ahora: destino inalcanzable (SCRUM-7) |
+| `pruebas.c` | Suite de pruebas (`make test`, 36 pruebas), sin Java ni Docker: destino inalcanzable (SCRUM-7) y casos degenerados (SCRUM-8) |
 | `bench.c` | Medición de SCRUM-6: montículo vs. búsqueda lineal con 50, 150 y 400 paradas (y hasta 4.000 con `--grande`) |
 | `graficar_medicion.py` | Dibuja la gráfica SVG a partir del CSV de `bench` (solo biblioteca estándar de Python) |
 | `Makefile` | `make` compila `libgrafo.so`; `make prueba` corre la prueba; `make test` corre la suite; `make medicion` corre la medición |

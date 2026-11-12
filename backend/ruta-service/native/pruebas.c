@@ -11,7 +11,13 @@
  *     - No escribe nada en camino_salida ni en costo_salida.
  *     - No se queda en un ciclo: termina, y en el mismo orden de tiempo que
  *       una consulta normal (se mide al final).
- *   (SCRUM-8 agregará aquí los casos degenerados.)
+ *   SCRUM-8 [RN-04] Casos degenerados e índices fuera de rango
+ *     - Origen igual a destino: camino de 1 parada y costo 0.
+ *     - Red de una sola parada, tramos de costo 0, tramos repetidos y bucles.
+ *     - Índices fuera de rango, punteros nulos, tamaños y pesos inválidos:
+ *       devuelven el código de error de grafo.h, sin tocar la salida y sin
+ *       que el programa aborte. Si algo produjera un segmentation fault, la
+ *       suite se caería y `make test` fallaría.
  */
 #define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
@@ -112,7 +118,7 @@ static void probar(const Caso *k) {
             if (camino[i] != CENTINELA) { ok = 0; motivo = "escribió en camino_salida"; }
     }
     /* Nunca debe escribir más allá de num_paradas posiciones */
-    for (int i = k->num_paradas; ok && i < MAX_PARADAS; i++)
+    for (int i = k->num_paradas > 0 ? k->num_paradas : 0; ok && i < MAX_PARADAS; i++)
         if (camino[i] != CENTINELA) { ok = 0; motivo = "escribió fuera del arreglo"; }
 
     if (ok) { pasadas++; printf("  OK     %s  (devolvió %d)\n", k->nombre, r); }
@@ -154,6 +160,66 @@ static void casos_inalcanzables(void) {
     probar(&(Caso){ "Red 40 con el tramo 90 cerrado: Terminal -> Terminal Aérea", 40, t89, o89, d89, p89, 0, 38, GRAFO_SIN_RUTA, NULL, 0 });
     probar(&(Caso){ "Red 40 con el tramo 90 cerrado: Zona Rural La Marina -> Salida Sur", 40, t89, o89, d89, p89, 39, 36, GRAFO_SIN_RUTA, NULL, 0 });
     probar(&(Caso){ "Red 40 con el tramo 90 cerrado: Peaje -> Zona Rural (misma isla, sí hay ruta)", 40, t89, o89, d89, p89, 37, 39, 2, (const int[]){ 37, 39 }, 7 });
+}
+
+/* ---------- SCRUM-8: casos degenerados e índices fuera de rango ---------- */
+
+/* Llamada con un puntero de salida nulo: debe devolver -3 sin abortar */
+static void probar_salida_nula(const char *nombre, int sin_camino, int sin_costo) {
+    static const int o[] = { 0, 1 }, d[] = { 1, 2 }, p[] = { 1, 1 };
+    int camino[3] = { CENTINELA, CENTINELA, CENTINELA }, costo = CENTINELA;
+    int r = dijkstra(3, 2, o, d, p, 0, 2, sin_camino ? NULL : camino, sin_costo ? NULL : &costo);
+    int ok = r == GRAFO_ARGUMENTO_INVALIDO && costo == CENTINELA &&
+             camino[0] == CENTINELA && camino[1] == CENTINELA && camino[2] == CENTINELA;
+    if (ok) { pasadas++; printf("  OK     %s  (devolvió %d)\n", nombre, r); }
+    else    { fallidas++; printf("  FALLA  %s  (devolvió %d, esperado %d)\n", nombre, r, GRAFO_ARGUMENTO_INVALIDO); }
+}
+
+static void casos_degenerados(void) {
+    /* Grafo guía de 5 paradas (A=0 ... E=4) y red de 7 paradas de referencia */
+    static const int og[] = { 0, 0, 1, 1, 2, 2, 3 }, dg[] = { 1, 2, 2, 3, 3, 4, 4 }, pg[] = { 4, 2, 3, 5, 8, 15, 2 };
+    static const int o7[] = { 0, 0, 2, 1, 2, 3, 3, 4, 4, 5 }, d7[] = { 1, 2, 1, 3, 4, 4, 5, 5, 6, 6 },
+                     p7[] = { 4, 2, 1, 5, 8, 2, 6, 3, 7, 1 };
+
+    printf("\nSCRUM-8 [RN-04] Origen igual a destino y redes mínimas\n");
+    probar(&(Caso){ "Origen igual a destino (Universidad -> Universidad)", 7, 10, o7, d7, p7, 3, 3, 1, (const int[]){ 3 }, 0 });
+    probar(&(Caso){ "Origen igual a destino en una parada sin tramos", 5, 4, (const int[]){ 0, 1, 2, 3 },
+                    (const int[]){ 1, 2, 3, 0 }, (const int[]){ 1, 2, 3, 4 }, 4, 4, 1, (const int[]){ 4 }, 0 });
+    probar(&(Caso){ "Red de una sola parada: 0 -> 0", 1, 0, NULL, NULL, NULL, 0, 0, 1, (const int[]){ 0 }, 0 });
+    probar(&(Caso){ "Red de una sola parada: 0 -> 1 (no existe)", 1, 0, NULL, NULL, NULL, 0, 1, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+
+    printf("\nSCRUM-8 [RN-04] Tramos de costo cero, repetidos y bucles\n");
+    probar(&(Caso){ "Tramo de costo 0 en el camino: 0 -(0)- 1 -(4)- 2", 3, 2, (const int[]){ 0, 1 },
+                    (const int[]){ 1, 2 }, (const int[]){ 0, 4 }, 0, 2, 3, (const int[]){ 0, 1, 2 }, 4 });
+    probar(&(Caso){ "Todo cuesta 0: gana el camino con menos paradas", 3, 3, (const int[]){ 0, 1, 0 },
+                    (const int[]){ 1, 2, 2 }, (const int[]){ 0, 0, 0 }, 0, 2, 2, (const int[]){ 0, 2 }, 0 });
+    probar(&(Caso){ "Dos tramos entre las mismas paradas (9 y 2): usa el barato", 2, 2, (const int[]){ 0, 0 },
+                    (const int[]){ 1, 1 }, (const int[]){ 9, 2 }, 0, 1, 2, (const int[]){ 0, 1 }, 2 });
+    probar(&(Caso){ "Tramo que sale y llega a la misma parada (1-1)", 3, 3, (const int[]){ 0, 1, 1 },
+                    (const int[]){ 1, 1, 2 }, (const int[]){ 3, 1, 4 }, 0, 2, 3, (const int[]){ 0, 1, 2 }, 7 });
+    probar(&(Caso){ "Costo total que no cabe en un int", 3, 2, (const int[]){ 0, 1 }, (const int[]){ 1, 2 },
+                    (const int[]){ 2000000000, 2000000000 }, 0, 2, GRAFO_COSTO_DESBORDADO, NULL, 0 });
+
+    printf("\nSCRUM-8 [RN-04] Índices fuera de rango (código -2, sin segmentation fault)\n");
+    probar(&(Caso){ "Destino 99 cuando hay 5 paradas", 5, 7, og, dg, pg, 0, 99, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Origen 99 cuando hay 5 paradas", 5, 7, og, dg, pg, 99, 4, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Destino igual a num_paradas (5 cuando van de 0 a 4)", 5, 7, og, dg, pg, 0, 5, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Origen negativo (-1)", 5, 7, og, dg, pg, -1, 4, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Origen 99 y destino 99 (iguales, pero no existen)", 5, 7, og, dg, pg, 99, 99, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Un tramo apunta a la parada 7 en una red de 3", 3, 1, (const int[]){ 0 }, (const int[]){ 7 },
+                    (const int[]){ 1 }, 0, 1, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+    probar(&(Caso){ "Un tramo sale de la parada -4", 3, 1, (const int[]){ -4 }, (const int[]){ 1 },
+                    (const int[]){ 1 }, 0, 1, GRAFO_FUERA_DE_RANGO, NULL, 0 });
+
+    printf("\nSCRUM-8 [RN-04] Argumentos inválidos (código -3, sin segmentation fault)\n");
+    probar(&(Caso){ "Peso negativo", 2, 1, (const int[]){ 0 }, (const int[]){ 1 }, (const int[]){ -3 }, 0, 1,
+                    GRAFO_ARGUMENTO_INVALIDO, NULL, 0 });
+    probar(&(Caso){ "Red de 0 paradas", 0, 0, NULL, NULL, NULL, 0, 0, GRAFO_ARGUMENTO_INVALIDO, NULL, 0 });
+    probar(&(Caso){ "Cantidad de paradas negativa", -5, 0, NULL, NULL, NULL, 0, 0, GRAFO_ARGUMENTO_INVALIDO, NULL, 0 });
+    probar(&(Caso){ "Cantidad de tramos negativa", 5, -1, og, dg, pg, 0, 4, GRAFO_ARGUMENTO_INVALIDO, NULL, 0 });
+    probar(&(Caso){ "Hay tramos pero los arreglos son nulos", 5, 7, NULL, NULL, NULL, 0, 4, GRAFO_ARGUMENTO_INVALIDO, NULL, 0 });
+    probar_salida_nula("camino_salida nulo", 1, 0);
+    probar_salida_nula("costo_salida nulo", 0, 1);
 }
 
 /* ---------- SCRUM-7: "en el mismo orden de tiempo" ----------
@@ -225,6 +291,7 @@ int main(void) {
     double t0 = ahora_us();
     casos_inalcanzables();
     tiempo_inalcanzable();
+    casos_degenerados();
     printf("\n%d pruebas pasaron, %d fallaron  (%.2f s)\n", pasadas, fallidas, (ahora_us() - t0) / 1e6);
     return fallidas == 0 ? 0 : 1;
 }
