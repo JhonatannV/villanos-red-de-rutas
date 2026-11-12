@@ -21,10 +21,29 @@ typedef struct {
 } Arista;
 
 /*
+ * Códigos de error de dijkstra() (siempre negativos).
+ * Java solo necesita saber que "< 0" significa "no hay ruta válida";
+ * el número exacto dice por qué.
+ */
+#define GRAFO_SIN_RUTA            (-1) /* no hay camino entre las dos paradas   */
+#define GRAFO_FUERA_DE_RANGO      (-2) /* una parada no existe en la red        */
+#define GRAFO_ARGUMENTO_INVALIDO  (-3) /* puntero nulo, tamaño o peso negativo  */
+#define GRAFO_SIN_MEMORIA         (-4) /* malloc falló                          */
+#define GRAFO_COSTO_DESBORDADO    (-5) /* el costo total no cabe en un int      */
+
+/*
  * [RN-01 a RN-05]
- * Devuelve la cantidad de paradas del camino, o -1 si no hay ruta.
+ * La red llega como tres arreglos paralelos: el tramo i une origen[i] con
+ * destino[i] y cuesta peso[i]. Paradas numeradas de 0 a num_paradas - 1.
+ * Los tramos se recorren en los dos sentidos.
+ *
+ * Devuelve la cantidad de paradas del camino (>= 1) o un código negativo.
  * camino_salida y costo_salida los reserva quien llama (Java):
- * camino_salida debe tener espacio para num_paradas enteros.
+ * camino_salida debe tener espacio para num_paradas enteros y costo_salida
+ * para 1. C solo los llena; nunca los libera. La memoria de trabajo que C
+ * pide por dentro la libera antes de retornar.
+ * Si hay empate de costo, gana el camino con menos paradas.
+ * Si devuelve un código negativo, no escribe nada en la salida.
  */
 int dijkstra(int num_paradas,
              int num_tramos,
