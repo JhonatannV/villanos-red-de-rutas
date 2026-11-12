@@ -34,6 +34,22 @@ public class GatewayController {
         this.rutaRestTemplate = rutaRestTemplate;
     }
 
+    public String getRutaServiceUrl() {
+        return rutaServiceUrl;
+    }
+
+    public void setRutaServiceUrl(String rutaServiceUrl) {
+        this.rutaServiceUrl = rutaServiceUrl;
+    }
+
+    public String getGrafoServiceUrl() {
+        return grafoServiceUrl;
+    }
+
+    public void setGrafoServiceUrl(String grafoServiceUrl) {
+        this.grafoServiceUrl = grafoServiceUrl;
+    }
+
     @RequestMapping(value = "/api/redes/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     public ResponseEntity<?> proxyGrafo(HttpServletRequest request,
                                         @RequestBody(required = false) byte[] body) {
@@ -75,7 +91,17 @@ public class GatewayController {
             errorBody.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
             errorBody.put("error", "Service Unavailable");
             errorBody.put("servicio", serviceName);
-            errorBody.put("mensaje", "El microservicio " + serviceName + " no responde o excedio el tiempo limite de espera.");
+
+            boolean esTimeout = (e.getCause() instanceof java.net.SocketTimeoutException)
+                    || (e.getMessage() != null && e.getMessage().toLowerCase().contains("timed out"));
+
+            if (esTimeout) {
+                errorBody.put("motivo", "TIMEOUT");
+                errorBody.put("mensaje", "El microservicio " + serviceName + " excedio el tiempo limite de espera (timeout 2s).");
+            } else {
+                errorBody.put("motivo", "CONEXION_RECHAZADA");
+                errorBody.put("mensaje", "El microservicio " + serviceName + " no esta disponible (servicio apagado o conexion rechazada).");
+            }
             errorBody.put("detalle", e.getMessage());
 
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
