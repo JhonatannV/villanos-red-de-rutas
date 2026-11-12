@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" font-family="Segoe UI, Arial, sans-serif">
+<rect width="1000" height="420" fill="#ffffff"/>
+<text x="58" y="22" font-size="14" font-weight="700" fill="#162030">50, 150 y 400 paradas (lo que pide SCRUM-6)</text>
+<line x1="58.0" y1="336.0" x2="484.0" y2="336.0" stroke="#e3e7ed"/>
+<text x="50.0" y="340.0" font-size="11" text-anchor="end" fill="#5a6678">0</text>
+<line x1="58.0" y1="237.3" x2="484.0" y2="237.3" stroke="#e3e7ed"/>
+<text x="50.0" y="241.3" font-size="11" text-anchor="end" fill="#5a6678">50</text>
+<line x1="58.0" y1="138.7" x2="484.0" y2="138.7" stroke="#e3e7ed"/>
+<text x="50.0" y="142.7" font-size="11" text-anchor="end" fill="#5a6678">100</text>
+<line x1="58.0" y1="40.0" x2="484.0" y2="40.0" stroke="#e3e7ed"/>
+<text x="50.0" y="44.0" font-size="11" text-anchor="end" fill="#5a6678">150</text>
+<text x="463.7" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">1,100</text>
+<text x="210.3" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">413</text>
+<text x="108.9" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">138</text>
+<text x="271.0" y="376" font-size="12" text-anchor="middle" fill="#5a6678">Tramos de la red</text>
+<text x="14" y="188.0" font-size="12" text-anchor="middle" fill="#5a6678" transform="rotate(-90 14 188.0)">Microsegundos por consulta</text>
+<polyline points="108.9,330.1 210.3,318.3 463.7,288.9" fill="none" stroke="#9aa4b2" stroke-width="2.5" stroke-dasharray="5 5"/>
+<polyline points="108.9,325.0 210.3,268.2 463.7,105.9" fill="none" stroke="#cc3b30" stroke-width="2.5"/>
+<circle cx="108.9" cy="325.0" r="3.5" fill="#cc3b30"/>
+<circle cx="210.3" cy="268.2" r="3.5" fill="#cc3b30"/>
+<circle cx="463.7" cy="105.9" r="3.5" fill="#cc3b30"/>
+<polyline points="108.9,330.1 210.3,315.5 463.7,277.4" fill="none" stroke="#2050cc" stroke-width="2.5"/>
+<circle cx="108.9" cy="330.1" r="3.5" fill="#2050cc"/>
+<circle cx="210.3" cy="315.5" r="3.5" fill="#2050cc"/>
+<circle cx="463.7" cy="277.4" r="3.5" fill="#2050cc"/>
+<text x="459.7" y="97.9" font-size="12" text-anchor="end" fill="#cc3b30" font-weight="700">Búsqueda lineal 117 us</text>
+<text x="459.7" y="269.4" font-size="12" text-anchor="end" fill="#2050cc" font-weight="700">Montículo 30 us</text>
+<text x="558.0" y="22" font-size="14" font-weight="700" fill="#162030">Hasta 4.000 paradas (para ver la tendencia)</text>
+<line x1="558.0" y1="336.0" x2="984.0" y2="336.0" stroke="#e3e7ed"/>
+<text x="550.0" y="340.0" font-size="11" text-anchor="end" fill="#5a6678">0</text>
+<line x1="558.0" y1="276.8" x2="984.0" y2="276.8" stroke="#e3e7ed"/>
+<text x="550.0" y="280.8" font-size="11" text-anchor="end" fill="#5a6678">2,000</text>
+<line x1="558.0" y1="217.6" x2="984.0" y2="217.6" stroke="#e3e7ed"/>
+<text x="550.0" y="221.6" font-size="11" text-anchor="end" fill="#5a6678">4,000</text>
+<line x1="558.0" y1="158.4" x2="984.0" y2="158.4" stroke="#e3e7ed"/>
+<text x="550.0" y="162.4" font-size="11" text-anchor="end" fill="#5a6678">6,000</text>
+<line x1="558.0" y1="99.2" x2="984.0" y2="99.2" stroke="#e3e7ed"/>
+<text x="550.0" y="103.2" font-size="11" text-anchor="end" fill="#5a6678">8,000</text>
+<line x1="558.0" y1="40.0" x2="984.0" y2="40.0" stroke="#e3e7ed"/>
+<text x="550.0" y="44.0" font-size="11" text-anchor="end" fill="#5a6678">10,000</text>
+<text x="963.7" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">11,000</text>
+<text x="760.9" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">5,500</text>
+<text x="659.4" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">2,750</text>
+<text x="598.6" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">1,100</text>
+<text x="563.1" y="354.0" font-size="11" text-anchor="middle" fill="#5a6678">138</text>
+<text x="771.0" y="376" font-size="12" text-anchor="middle" fill="#5a6678">Tramos de la red</text>
+<text x="514.0" y="188.0" font-size="12" text-anchor="middle" fill="#5a6678" transform="rotate(-90 514.0 188.0)">Microsegundos por consulta</text>
+<polyline points="563.1,335.9 573.2,335.7 598.6,335.3 659.4,334.2 760.9,332.5 963.7,328.9" fill="none" stroke="#9aa4b2" stroke-width="2.5" stroke-dasharray="5 5"/>
+<polyline points="563.1,335.8 573.2,335.0 598.6,332.5 659.4,320.8 760.9,282.3 963.7,119.9" fill="none" stroke="#cc3b30" stroke-width="2.5"/>
+<circle cx="563.1" cy="335.8" r="3.5" fill="#cc3b30"/>
+<circle cx="573.2" cy="335.0" r="3.5" fill="#cc3b30"/>
+<circle cx="598.6" cy="332.5" r="3.5" fill="#cc3b30"/>
+<circle cx="659.4" cy="320.8" r="3.5" fill="#cc3b30"/>
+<circle cx="760.9" cy="282.3" r="3.5" fill="#cc3b30"/>
+<circle cx="963.7" cy="119.9" r="3.5" fill="#cc3b30"/>
+<polyline points="563.1,335.9 573.2,335.7 598.6,335.1 659.4,333.5 760.9,330.4 963.7,322.8" fill="none" stroke="#2050cc" stroke-width="2.5"/>
+<circle cx="563.1" cy="335.9" r="3.5" fill="#2050cc"/>
+<circle cx="573.2" cy="335.7" r="3.5" fill="#2050cc"/>
+<circle cx="598.6" cy="335.1" r="3.5" fill="#2050cc"/>
+<circle cx="659.4" cy="333.5" r="3.5" fill="#2050cc"/>
+<circle cx="760.9" cy="330.4" r="3.5" fill="#2050cc"/>
+<circle cx="963.7" cy="322.8" r="3.5" fill="#2050cc"/>
+<text x="959.7" y="111.9" font-size="12" text-anchor="end" fill="#cc3b30" font-weight="700">Búsqueda lineal 7,301 us</text>
+<text x="959.7" y="314.8" font-size="12" text-anchor="end" fill="#2050cc" font-weight="700">Montículo 447 us</text>
+<line x1="60" y1="402" x2="84" y2="402" stroke="#2050cc" stroke-width="3"/><text x="90" y="406" font-size="12" fill="#162030">dijkstra() con montículo binario, O(E log V)</text>
+<line x1="380" y1="402" x2="404" y2="402" stroke="#cc3b30" stroke-width="3"/><text x="410" y="406" font-size="12" fill="#162030">Misma función con búsqueda lineal, O(V²)</text>
+<line x1="690" y1="402" x2="714" y2="402" stroke="#9aa4b2" stroke-width="2.5" stroke-dasharray="5 5"/><text x="720" y="406" font-size="12" fill="#162030">Si creciera igual que los tramos</text>
+</svg>

@@ -1,7 +1,8 @@
 # Componente nativo de ruta-service (Santiago Ríos).
-#   make           compila libgrafo.so (la que carga Java con JNA) y el programa de prueba
-#   make prueba    corre la prueba del grafo guía (SCRUM-5)
-#   make clean     borra lo compilado
+#   make             compila libgrafo.so (la que carga Java con JNA) y el programa de prueba
+#   make prueba      corre la prueba de los grafos de referencia (SCRUM-5)
+#   make medicion    mide montículo vs. búsqueda lineal con 50, 150 y 400 paradas (SCRUM-6)
+#   make clean       borra lo compilado
 CC     = gcc
 CFLAGS = -Wall -Wextra -O2 -std=c11
 
@@ -14,10 +15,16 @@ libgrafo.so: dijkstra.c grafo.h
 main: main.c dijkstra.c grafo.h
 	$(CC) $(CFLAGS) -o $@ main.c dijkstra.c
 
+bench: bench.c dijkstra.c grafo.h
+	$(CC) $(CFLAGS) -o $@ bench.c dijkstra.c -lm
+
 prueba: main
 	./main
 
-clean:
-	rm -f libgrafo.so main main.exe grafo.dll
+medicion: bench
+	./bench
 
-.PHONY: all prueba clean
+clean:
+	rm -f libgrafo.so main main.exe bench bench.exe grafo.dll
+
+.PHONY: all prueba medicion clean
