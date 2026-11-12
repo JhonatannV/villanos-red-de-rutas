@@ -18,6 +18,7 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-06](#d-06) | A igual costo gana el camino con menos paradas | Tomada |
 | [D-07](#d-07) | Respaldo en Java escogido por configuración | Tomada |
 | [D-08](#d-08) | El tamaño del arreglo de salida no viaja en la firma | Tomada |
+| [D-09](#d-09) | Las entradas se validan antes de elegir implementación | Tomada |
 | — | Abiertas: origen de la traza, carga del `.so`, caché de la red, Swarm o Kubernetes | [Ver al final](#decisiones-abiertas) |
 
 ---
@@ -98,7 +99,7 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Por qué se descartaron | Con (a), si la biblioteca falla al cargar en el contenedor, el cálculo de rutas deja de existir. Con (b) no hay forma de medir A-RQ-01 dentro del sistema real. |
 | Requisito de calidad | **W-RQ-01 Disponibilidad** (la aplicación sigue en pie sin el nativo) y **A-RQ-01 Desempeño** (la versión Java es la línea base). |
 | Qué se pierde | Dos implementaciones que mantener iguales. Lo mitigan los casos de referencia comunes y D-06. |
-| Fecha y quién | 11 nov 2026 · Jhonatan (`PuenteRutas.java`). La propiedad de configuración se completa en SCRUM-15. |
+| Fecha y quién | 11 nov 2026 · Jhonatan (`PuenteRutas.java`). 12 nov 2026 · Santiago: `SelectorAlgoritmo` con `app.algorithm.mode` y cambio a Java también si una llamada nativa falla (SCRUM-15). |
 
 ### D-08
 **El tamaño del arreglo de salida no viaja en la firma de `dijkstra()`.**
@@ -111,6 +112,17 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Qué se pierde | Si alguien llama a la biblioteca sin respetar el contrato, C no lo puede detectar. |
 | Fecha y quién | 12 nov 2026 · Santiago. Por confirmar con Jhonatan. |
 
+### D-09
+**Las entradas se validan una sola vez, antes de elegir entre C y Java,** con las reglas de `grafo.h`.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Dejar que cada implementación valide a su manera y traducir sus respuestas. (b) Validar solo en el modo `native`. |
+| Por qué se descartaron | `dijkstra.c` distingue parada fuera de rango (`-2`) y argumento inválido (`-3`), mientras que `DijkstraJava` devuelve `-1` en ambos casos. Con (a) o (b), la misma consulta inválida respondería "sin ruta" en un modo y "parada inexistente" en el otro, y el resultado dependería de la configuración. |
+| Requisito de calidad | **A-RQ-02 Testabilidad**: las pruebas exigen el mismo resultado en los dos modos. **W-RQ-01 Disponibilidad**: cambiar de C a Java no cambia lo que ve el usuario. |
+| Qué se pierde | Las entradas se recorren dos veces en modo `native` (una en Java y otra en C). Con 1.100 tramos es despreciable frente al cálculo. |
+| Fecha y quién | 12 nov 2026 · Santiago (SCRUM-15). |
+
 ---
 
 ## Decisiones abiertas
@@ -120,7 +132,7 @@ Se registran aquí para no perderlas. Cada una pasa a una entrada D-xx cuando se
 | Tema | Opciones | Requisito que la decide | Tarea |
 |---|---|---|---|
 | **De dónde sale la traza paso a paso** (RF-04) | (a) La calcula Java aunque el camino lo dé C. (b) Una segunda función en C que llene también la traza. | W-RQ-03: pedir la traza no puede duplicar el tiempo. A-RQ-01. | SCRUM-14/15 |
-| **Cómo se carga `libgrafo.so` en el contenedor** | `jna.library.path`, `LD_LIBRARY_PATH` o `Native.load` con ruta absoluta | A-RQ-03 Facilidad de despliegue | SCRUM-15/16 |
+| **Cómo se carga `libgrafo.so` en el contenedor** | `jna.library.path` (ya usado en pruebas, SCRUM-15), `LD_LIBRARY_PATH` o `Native.load` con ruta absoluta | A-RQ-03 Facilidad de despliegue | SCRUM-16 |
 | **Red en caché o pedida en cada consulta** | Pedirla a `grafo-service` siempre, o guardarla en `ruta-service` e invalidarla cuando cambie | W-RQ-03 Desempeño contra correctitud | SCRUM-14 |
 | **Lista o matriz de adyacencia** en `ruta-service` | Lista (proporcional a los tramos) o matriz (160.000 casillas con 400 paradas, casi vacías) | RF-07, W-RQ-03 | SCRUM-25 |
 | **Orquestador** | Docker Swarm o Kubernetes | A-RQ-03 | SCRUM-38 |
