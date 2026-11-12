@@ -1,30 +1,33 @@
 package com.villanos.ruta.nativo;
 
 import com.villanos.ruta.algoritmo.DijkstraJava;
+import com.villanos.ruta.calculo.ModoAlgoritmo;
+import com.villanos.ruta.calculo.SelectorAlgoritmo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
+/**
+ * Acceso estático al cálculo de rutas. Delega en {@link SelectorAlgoritmo}, que
+ * decide entre C y Java y hace el respaldo automático.
+ */
 public class PuenteRutas {
 
-    private static LibGrafo instanciaNativa;
-    private static boolean intentoCargaRealizado = false;
+    private static SelectorAlgoritmo selectorNativo;
+    private static final SelectorAlgoritmo SELECTOR_JAVA = new SelectorAlgoritmo(ModoAlgoritmo.JAVA);
 
-    // Intenta cargar el binario C una sola vez sin tumbar el programa si aun no existe
-    public static synchronized boolean estaDisponibleNativo() {
-        if (!intentoCargaRealizado) {
-            intentoCargaRealizado = true;
-            try {
-                instanciaNativa = LibGrafo.cargar();
-            } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-                instanciaNativa = null;
-            }
+    // Intenta cargar el binario C una sola vez sin tumbar el programa si aún no existe
+    private static synchronized SelectorAlgoritmo selectorNativo() {
+        if (selectorNativo == null) {
+            selectorNativo = new SelectorAlgoritmo(ModoAlgoritmo.NATIVE);
         }
-        return instanciaNativa != null;
+        return selectorNativo;
     }
 
-    // Ejecuta por C si esta disponible y activado; si no, usa el respaldo Java puro
+    public static boolean estaDisponibleNativo() {
+        return selectorNativo().modoEfectivo() == ModoAlgoritmo.NATIVE;
+    }
+
+    // Ejecuta por C si está disponible y activado; si no, usa el respaldo Java puro
     public static DijkstraJava.ResultadoRuta calcularConContrato(int numParadas,
                                                                  int numTramos,
                                                                  int[] origen,
@@ -33,28 +36,11 @@ public class PuenteRutas {
                                                                  int paradaInicio,
                                                                  int paradaFin,
                                                                  boolean usarNativo) {
-        if (usarNativo && estaDisponibleNativo()) {
-            // Java reserva la memoria antes de cruzar la frontera hacia C
-            int[] caminoSalida = new int[numParadas];
-            int[] costoSalida = new int[1];
-
-            int cantidadParadas = instanciaNativa.dijkstra(
-                    numParadas, numTramos, origen, destino, peso,
-                    paradaInicio, paradaFin, caminoSalida, costoSalida
-            );
-
-            if (cantidadParadas < 0) {
-                return new DijkstraJava.ResultadoRuta(-1, Collections.emptyList(), Collections.emptyList());
-            }
-
-            List<Integer> camino = new ArrayList<>(cantidadParadas);
-            for (int i = 0; i < cantidadParadas; i++) {
-                camino.add(caminoSalida[i]);
-            }
-            return new DijkstraJava.ResultadoRuta(costoSalida[0], camino, Collections.emptyList());
-        }
-
-        // Respaldo transparente en Java puro
-        return DijkstraJava.calcular(numParadas, numTramos, origen, destino, peso, paradaInicio, paradaFin);
+        SelectorAlgoritmo selector = usarNativo ? selectorNativo() : SELECTOR_JAVA;
+        return selector.calcular(numParadas,
+                Arrays.copyOf(origen, numTramos),
+                Arrays.copyOf(destino, numTramos),
+                Arrays.copyOf(peso, numTramos),
+                paradaInicio, paradaFin);
     }
 }
