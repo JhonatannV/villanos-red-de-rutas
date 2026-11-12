@@ -4,48 +4,64 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.villanos</groupId>
     <artifactId>ruta-service</artifactId>
     <version>1.0.0-SNAPSHOT</version>
+    <name>ruta-service</name>
+    <description>Microservicio de calculo de rutas optimas con C nativo y JNA</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>17</java.version>
     </properties>
 
     <dependencies>
-        <!-- Gson: libreria ligera para leer nuestro archivo grafo_40_paradas.json -->
+        <!-- Spring Boot Web y Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Gson: lectura de datasets JSON -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.11.0</version>
         </dependency>
 
-        <!-- JUnit 5: framework estandar para ejecutar pruebas automaticas -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.11.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- JNA: permite que Java invoque funciones escritas en C -->
+        <!-- JNA: comunicacion con biblioteca nativa en C -->
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>5.15.0</version>
         </dependency>
+
+        <!-- Pruebas unitarias e integracion -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Las pruebas buscan libgrafo.so (Linux) o grafo.dll (Windows) en native/.
-                 Si no está compilada, las pruebas que la necesitan se omiten. -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
                 <configuration>
                     <systemPropertyVariables>
                         <jna.library.path>${project.basedir}/native</jna.library.path>

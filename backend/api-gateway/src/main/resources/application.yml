@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+services:
+  grafo-service:
+    url: ${GRAFO_SERVICE_URL:http://localhost:8081}
+    timeout-ms: 5000
+  ruta-service:
+    url: ${RUTA_SERVICE_URL:http://localhost:8082}
+    timeout-ms: 2000
