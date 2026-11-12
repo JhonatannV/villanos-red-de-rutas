@@ -1,0 +1,20 @@
+SCRUM-7 [RN-03] Destino inalcanzable
+  OK     Grafo partido en dos: 0 -> 3  (devolvió -1)
+  OK     Grafo partido en dos, al revés: 3 -> 0  (devolvió -1)
+  OK     Parada aislada como destino: 0 -> 4  (devolvió -1)
+  OK     Parada aislada como origen: 4 -> 0  (devolvió -1)
+  OK     Red sin tramos: 0 -> 2  (devolvió -1)
+  OK     Isla con ciclo 0-1-2-0, destino en otra isla: 0 -> 5  (devolvió -1)
+  OK     Red 40: Terminal -> Coliseo Benicio (control RF-03 caso 1)  (devolvió 4)
+  OK     Red 40: Hospital -> Barrio Farfán (control RF-03 caso 2)  (devolvió 5)
+  OK     Red 40: Terminal -> Terminal Aérea, todo abierto  (devolvió 9)
+  OK     Red 40 con el tramo 90 cerrado: Terminal -> Terminal Aérea  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Zona Rural La Marina -> Salida Sur  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Peaje -> Zona Rural (misma isla, sí hay ruta)  (devolvió 2)
+
+SCRUM-7 [RN-03] Tiempo de una consulta sin ruta (400 paradas en dos islas)
+  Con ruta (misma isla):       16.82 us por consulta
+  Sin ruta (otra isla):        29.88 us por consulta
+  OK     Sin ruta tarda 1.8 veces una consulta normal: mismo orden de tiempo
+
+13 pruebas pasaron, 0 fallaron  (0.24 s)
