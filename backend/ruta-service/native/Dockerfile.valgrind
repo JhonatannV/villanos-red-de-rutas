@@ -1,0 +1,16 @@
+# Contenedor Linux para correr la suite del componente nativo con Valgrind (SCRUM-9).
+# No es la imagen de ruta-service (esa es el Dockerfile multietapa de SCRUM-16):
+# solo sirve para probar la memoria desde Windows o macOS, donde Valgrind no existe.
+#
+#   docker build -t villanos-valgrind -f Dockerfile.valgrind .
+#   docker run --rm villanos-valgrind
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc libc6-dev make valgrind \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /native
+COPY grafo.h dijkstra.c main.c pruebas.c Makefile ./
+
+CMD ["sh", "-c", "gcc --version | head -1 && valgrind --version && make valgrind"]

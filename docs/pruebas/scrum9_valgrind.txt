@@ -1,0 +1,98 @@
+gcc (Debian 12.2.0-14+deb12u1) 12.2.0
+valgrind-3.19.0
+gcc -Wall -Wextra -O2 -g -std=c11 -o pruebas pruebas.c dijkstra.c
+gcc -Wall -Wextra -O2 -g -std=c11 -o main main.c dijkstra.c
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=1 ./pruebas
+==25== Memcheck, a memory error detector
+==25== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==25== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==25== Command: ./pruebas
+==25== 
+SCRUM-7 [RN-03] Destino inalcanzable
+  OK     Grafo partido en dos: 0 -> 3  (devolvió -1)
+  OK     Grafo partido en dos, al revés: 3 -> 0  (devolvió -1)
+  OK     Parada aislada como destino: 0 -> 4  (devolvió -1)
+  OK     Parada aislada como origen: 4 -> 0  (devolvió -1)
+  OK     Red sin tramos: 0 -> 2  (devolvió -1)
+  OK     Isla con ciclo 0-1-2-0, destino en otra isla: 0 -> 5  (devolvió -1)
+  OK     Red 40: Terminal -> Coliseo Benicio (control RF-03 caso 1)  (devolvió 4)
+  OK     Red 40: Hospital -> Barrio Farfán (control RF-03 caso 2)  (devolvió 5)
+  OK     Red 40: Terminal -> Terminal Aérea, todo abierto  (devolvió 9)
+  OK     Red 40 con el tramo 90 cerrado: Terminal -> Terminal Aérea  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Zona Rural La Marina -> Salida Sur  (devolvió -1)
+  OK     Red 40 con el tramo 90 cerrado: Peaje -> Zona Rural (misma isla, sí hay ruta)  (devolvió 2)
+
+SCRUM-7 [RN-03] Tiempo de una consulta sin ruta (400 paradas en dos islas)
+  Con ruta (misma isla):      163.26 us por consulta
+  Sin ruta (otra isla):       219.42 us por consulta
+  OK     Sin ruta tarda 1.3 veces una consulta normal: mismo orden de tiempo
+
+SCRUM-8 [RN-04] Origen igual a destino y redes mínimas
+  OK     Origen igual a destino (Universidad -> Universidad)  (devolvió 1)
+  OK     Origen igual a destino en una parada sin tramos  (devolvió 1)
+  OK     Red de una sola parada: 0 -> 0  (devolvió 1)
+  OK     Red de una sola parada: 0 -> 1 (no existe)  (devolvió -2)
+
+SCRUM-8 [RN-04] Tramos de costo cero, repetidos y bucles
+  OK     Tramo de costo 0 en el camino: 0 -(0)- 1 -(4)- 2  (devolvió 3)
+  OK     Todo cuesta 0: gana el camino con menos paradas  (devolvió 2)
+  OK     Dos tramos entre las mismas paradas (9 y 2): usa el barato  (devolvió 2)
+  OK     Tramo que sale y llega a la misma parada (1-1)  (devolvió 3)
+  OK     Costo total que no cabe en un int  (devolvió -5)
+
+SCRUM-8 [RN-04] Índices fuera de rango (código -2, sin segmentation fault)
+  OK     Destino 99 cuando hay 5 paradas  (devolvió -2)
+  OK     Origen 99 cuando hay 5 paradas  (devolvió -2)
+  OK     Destino igual a num_paradas (5 cuando van de 0 a 4)  (devolvió -2)
+  OK     Origen negativo (-1)  (devolvió -2)
+  OK     Origen 99 y destino 99 (iguales, pero no existen)  (devolvió -2)
+  OK     Un tramo apunta a la parada 7 en una red de 3  (devolvió -2)
+  OK     Un tramo sale de la parada -4  (devolvió -2)
+
+SCRUM-8 [RN-04] Argumentos inválidos (código -3, sin segmentation fault)
+  OK     Peso negativo  (devolvió -3)
+  OK     Red de 0 paradas  (devolvió -3)
+  OK     Cantidad de paradas negativa  (devolvió -3)
+  OK     Cantidad de tramos negativa  (devolvió -3)
+  OK     Hay tramos pero los arreglos son nulos  (devolvió -3)
+  OK     camino_salida nulo  (devolvió -3)
+  OK     costo_salida nulo  (devolvió -3)
+
+SCRUM-9 [RN-05] Arreglos del tamaño exacto, como los reserva Java
+  OK     Red 40, todas las parejas origen-destino: 1600 consultas, 1600 con ruta
+  OK     Red 40 con el tramo 90 cerrado, todas las parejas: 1600 consultas, 1378 con ruta
+
+38 pruebas pasaron, 0 fallaron  (2.07 s)
+==25== 
+==25== HEAP SUMMARY:
+==25==     in use at exit: 0 bytes in 0 blocks
+==25==   total heap usage: 111,505 allocs, 111,505 frees, 628,959,421 bytes allocated
+==25== 
+==25== All heap blocks were freed -- no leaks are possible
+==25== 
+==25== For lists of detected and suppressed errors, rerun with: -s
+==25== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=1 ./main
+==26== Memcheck, a memory error detector
+==26== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==26== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==26== Command: ./main
+==26== 
+Grafo guía de 5 paradas
+  A -> B -> D -> E  (costo 11)
+  OK: coincide con el cálculo a mano
+
+Grafo de referencia de 7 paradas
+  Terminal -> Hospital -> Estadio -> Parque -> Aeropuerto  (costo 14)
+  OK: coincide con el cálculo a mano
+
+2 de 2 casos correctos
+==26== 
+==26== HEAP SUMMARY:
+==26==     in use at exit: 0 bytes in 0 blocks
+==26==   total heap usage: 17 allocs, 17 frees, 5,220 bytes allocated
+==26== 
+==26== All heap blocks were freed -- no leaks are possible
+==26== 
+==26== For lists of detected and suppressed errors, rerun with: -s
+==26== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

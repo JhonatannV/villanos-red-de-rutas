@@ -2,10 +2,18 @@
 #   make             compila libgrafo.so (la que carga Java con JNA) y el programa de prueba
 #   make prueba      corre la prueba de los grafos de referencia (SCRUM-5)
 #   make medicion    mide montículo vs. búsqueda lineal con 50, 150 y 400 paradas (SCRUM-6)
-#   make test        corre la suite de pruebas: destino inalcanzable (SCRUM-7) y casos degenerados (SCRUM-8)
+#   make test        corre la suite de pruebas (SCRUM-7, SCRUM-8 y SCRUM-9)
+#   make valgrind    corre la suite y la prueba dentro de Valgrind, solo en Linux (SCRUM-9)
 #   make clean       borra lo compilado
+#
+# Desde Windows, Valgrind se corre en un contenedor Linux (ver Dockerfile.valgrind):
+#   docker build -t villanos-valgrind -f Dockerfile.valgrind .
+#   docker run --rm villanos-valgrind
 CC     = gcc
-CFLAGS = -Wall -Wextra -O2 -std=c11
+CFLAGS = -Wall -Wextra -O2 -g -std=c11
+
+# Valgrind termina con error si encuentra un acceso inválido o cualquier fuga
+VALGRIND = valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=1
 
 all: libgrafo.so main
 
@@ -31,7 +39,11 @@ test: pruebas
 medicion: bench
 	./bench
 
+valgrind: pruebas main
+	$(VALGRIND) ./pruebas
+	$(VALGRIND) ./main
+
 clean:
 	rm -f libgrafo.so main main.exe bench bench.exe pruebas pruebas.exe grafo.dll
 
-.PHONY: all prueba medicion test clean
+.PHONY: all prueba medicion test valgrind clean
