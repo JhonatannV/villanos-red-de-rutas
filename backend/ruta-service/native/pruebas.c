@@ -18,6 +18,11 @@
  *       devuelven el código de error de grafo.h, sin tocar la salida y sin
  *       que el programa aborte. Si algo produjera un segmentation fault, la
  *       suite se caería y `make test` fallaría.
+ *   SCRUM-9 [RN-05] Arreglos del tamaño exacto, como los reserva Java
+ *     - Todas las parejas de la red de 40 paradas, con la entrada y la
+ *       salida en memoria dinámica del tamaño justo. Corrida con Valgrind
+ *       (`make valgrind`), cualquier lectura o escritura de un solo int de
+ *       más se reporta como error.
  */
 #define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
@@ -287,11 +292,62 @@ static void tiempo_inalcanzable(void) {
     }
 }
 
+/* ---------- SCRUM-9: arreglos del tamaño exacto, como los reserva Java ----------
+ * Java crea int[numParadas] para el camino e int[1] para el costo, y pasa
+ * los tramos en int[numTramos]. Aquí se hace igual, pero con malloc: así, si
+ * dijkstra() leyera o escribiera aunque sea una posición de más, Valgrind lo
+ * detectaría (los arreglos en la pila no los vigila con esa precisión). */
+static int *copia_exacta(const int *datos, int n) {
+    int *c = malloc((size_t)n * sizeof(int));
+    memcpy(c, datos, (size_t)n * sizeof(int));
+    return c;
+}
+
+static void todas_las_parejas(const char *nombre, int cerrado) {
+    static int o[90], d[90], p[90];
+    int m = red40(cerrado, o, d, p);
+    int *origen = copia_exacta(o, m), *destino = copia_exacta(d, m), *peso = copia_exacta(p, m);
+    int consultas = 0, con_ruta = 0, incoherentes = 0;
+
+    for (int a = 0; a < 40; a++) {
+        for (int b = 0; b < 40; b++) {
+            int *camino = malloc(40 * sizeof(int));   /* int[numParadas] */
+            int *costo = malloc(sizeof(int));         /* int[1] */
+            int r = dijkstra(40, m, origen, destino, peso, a, b, camino, costo);
+            consultas++;
+            if (r > 0) {
+                con_ruta++;
+                if (camino[0] != a || camino[r - 1] != b || *costo < 0 || (r == 1) != (a == b)) incoherentes++;
+            } else if (r != GRAFO_SIN_RUTA) {
+                incoherentes++;
+            }
+            free(camino);
+            free(costo);
+        }
+    }
+    free(origen); free(destino); free(peso);
+
+    if (incoherentes == 0) {
+        pasadas++;
+        printf("  OK     %s: %d consultas, %d con ruta\n", nombre, consultas, con_ruta);
+    } else {
+        fallidas++;
+        printf("  FALLA  %s: %d resultados incoherentes\n", nombre, incoherentes);
+    }
+}
+
+static void casos_memoria_exacta(void) {
+    printf("\nSCRUM-9 [RN-05] Arreglos del tamaño exacto, como los reserva Java\n");
+    todas_las_parejas("Red 40, todas las parejas origen-destino", 0);
+    todas_las_parejas("Red 40 con el tramo 90 cerrado, todas las parejas", 90);
+}
+
 int main(void) {
     double t0 = ahora_us();
     casos_inalcanzables();
     tiempo_inalcanzable();
     casos_degenerados();
+    casos_memoria_exacta();
     printf("\n%d pruebas pasaron, %d fallaron  (%.2f s)\n", pasadas, fallidas, (ahora_us() - t0) / 1e6);
     return fallidas == 0 ? 0 : 1;
 }
