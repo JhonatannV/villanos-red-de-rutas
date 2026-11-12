@@ -1,0 +1,16 @@
+SCRUM-6 [RN-02] - Montículo binario vs. búsqueda lineal
+1000 consultas por red, 6 corridas (se descarta la 1.ª), mediana por consulta
+
+ Paradas   Tramos  Montículo (us)      Lineal (us) Lineal/Mont.
+      50      138             2.99             5.56       1.9x
+     150      413            10.39            34.34       3.3x
+     400     1100            29.68           116.59       3.9x
+    1000     2750            83.07           513.94       6.2x
+    2000     5500           187.81          1814.09       9.7x
+    4000    11000           447.18          7301.49      16.3x
+
+De 50 a 4000 paradas:
+  los tramos crecen     x79.7
+  V al cuadrado crece   x6400.0
+  el montículo tardó    x149.4
+  la búsqueda lineal    x1314.0
