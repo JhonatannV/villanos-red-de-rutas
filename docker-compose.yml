@@ -1,0 +1,73 @@
+services:
+  grafo-service:
+    build:
+      context: ./backend/grafo-service
+      dockerfile: Dockerfile
+    image: villanos/grafo-service:latest
+    container_name: grafo-service
+    ports:
+      - "8081:8081"
+    networks:
+      - red-de-rutas-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  ruta-service:
+    build:
+      context: ./backend/ruta-service
+      dockerfile: Dockerfile
+    image: villanos/ruta-service:latest
+    container_name: ruta-service
+    ports:
+      - "8082:8082"
+    environment:
+      - GRAFO_SERVICE_URL=http://grafo-service:8081
+      - ALGORITHM_MODE=native
+    depends_on:
+      grafo-service:
+        condition: service_healthy
+    networks:
+      - red-de-rutas-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    image: villanos/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - GRAFO_SERVICE_URL=http://grafo-service:8081
+      - RUTA_SERVICE_URL=http://ruta-service:8082
+    depends_on:
+      grafo-service:
+        condition: service_healthy
+      ruta-service:
+        condition: service_healthy
+    networks:
+      - red-de-rutas-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+networks:
+  red-de-rutas-net:
+    name: red-de-rutas-net
+    driver: bridge
