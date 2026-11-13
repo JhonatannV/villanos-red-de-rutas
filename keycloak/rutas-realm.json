@@ -1,0 +1,168 @@
+{
+  "realm": "rutas-realm",
+  "displayName": "Red de Rutas - Sistema de Transporte",
+  "displayNameHtml": "<b>Red de Rutas</b>",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 1800,
+  "ssoSessionIdleTimeout": 3600,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "planificador",
+        "description": "Mantenimiento y edicion de la red (crear, modificar y eliminar paradas y tramos)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "consultor",
+        "description": "Consulta de la red y calculo de rutas minimas (solo lectura)",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "admin",
+        "description": "Administrador del sistema con acceso total",
+        "composite": true,
+        "composites": {
+          "realm": ["planificador", "consultor"]
+        },
+        "clientRole": false
+      }
+    ]
+  },
+  "defaultRoles": [
+    "consultor"
+  ],
+  "clients": [
+    {
+      "clientId": "red-rutas-frontend",
+      "name": "Red de Rutas Frontend (Angular)",
+      "description": "Cliente publico SPA en Angular 17+ con Authorization Code y PKCE",
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://127.0.0.1:4200/*",
+        "http://localhost:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "http://localhost:8080",
+        "+"
+      ],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:4200/*##http://localhost:8080/*",
+        "access.token.lifespan": "1800"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "clientId": "red-rutas-backend",
+      "name": "Red de Rutas Backend Resource Server",
+      "description": "Resource Server para validacion de tokens JWT/JWKS en Spring Boot",
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "bearerOnly": true,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "defaultClientScopes": [
+        "web-origins",
+        "profile",
+        "roles",
+        "email"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "planificador",
+      "enabled": true,
+      "email": "planificador@villanos.local",
+      "firstName": "Carlos",
+      "lastName": "Planificador",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "planificador123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "planificador"
+      ]
+    },
+    {
+      "username": "consultor",
+      "enabled": true,
+      "email": "consultor@villanos.local",
+      "firstName": "Ana",
+      "lastName": "Consultora",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "consultor123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "consultor"
+      ]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@villanos.local",
+      "firstName": "Super",
+      "lastName": "Administrador",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "planificador",
+        "consultor"
+      ]
+    }
+  ]
+}
