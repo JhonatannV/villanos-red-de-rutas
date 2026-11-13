@@ -19,6 +19,8 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-07](#d-07) | Respaldo en Java escogido por configuración | Tomada |
 | [D-08](#d-08) | El tamaño del arreglo de salida no viaja en la firma | Tomada |
 | [D-09](#d-09) | Las entradas se validan antes de elegir implementación | Tomada |
+| [D-10](#d-10) | BFS, DFS, conectividad y ciclos se implementan en Java | Tomada |
+| [D-11](#d-11) | Los endpoints de algoritmos cuelgan de `/api/rutas` | Tomada |
 | — | Abiertas: origen de la traza, carga del `.so`, caché de la red, Swarm o Kubernetes | [Ver al final](#decisiones-abiertas) |
 
 ---
@@ -122,6 +124,28 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Requisito de calidad | **A-RQ-02 Testabilidad**: las pruebas exigen el mismo resultado en los dos modos. **W-RQ-01 Disponibilidad**: cambiar de C a Java no cambia lo que ve el usuario. |
 | Qué se pierde | Las entradas se recorren dos veces en modo `native` (una en Java y otra en C). Con 1.100 tramos es despreciable frente al cálculo. |
 | Fecha y quién | 12 nov 2026 · Santiago (SCRUM-15). |
+
+### D-10
+**BFS, DFS, componentes conexas y detección de ciclos se implementan en Java dentro de `ruta-service`.** Solo Dijkstra va en C.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Implementarlos también en `libgrafo.so` con las firmas que ya declara `grafo.h` (`recorrido`, `componentes_conexas`). (b) Calcularlos en el frontend. |
+| Por qué se descartaron | (a) El documento de Arquitectura solo exige Dijkstra en C; los demás son opcionales. Estos algoritmos son O(V + E) y se llaman una vez por consulta: cruzar la frontera JNA no tiene ganancia que medir, y cada función nativa más amplía el contrato, las pruebas y la revisión con Valgrind. (b) El enunciado prohíbe lógica de grafos en el frontend. |
+| Requisito de calidad | **A-RQ-01 Desempeño** (el código nativo se reserva para el cálculo que sí se mide) y **A-RQ-02 Testabilidad** (un solo lenguaje para los algoritmos auxiliares, con sus pruebas JUnit). |
+| Qué se pierde | Las declaraciones `recorrido` y `componentes_conexas` de `grafo.h` quedan sin implementación nativa. |
+| Fecha y quién | 13 nov 2026 · Santiago (SCRUM-23). |
+
+### D-11
+**Los endpoints de los algoritmos cuelgan de `/api/rutas`** (`/api/rutas/recorrido`, `/api/rutas/conectividad`, `/api/rutas/ciclos`, `/api/rutas/memoria`), y no de `/api/redes/{id}/...`.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) `/api/redes/{id}/recorrido` y `/api/redes/{id}/conectividad`, como en la planeación inicial. (b) Una regla especial en el gateway para desviar esas rutas a `ruta-service`. |
+| Por qué se descartaron | (a) El gateway envía todo `/api/redes/**` a `grafo-service`, que no tiene los algoritmos: esas rutas responderían 404. (b) Funciona, pero mezcla en un mismo prefijo dos servicios con dueños y disponibilidad distintos, y obliga a mantener una excepción en el gateway. |
+| Requisito de calidad | **W-RQ-01 Disponibilidad**: el prefijo decide qué servicio responde. Si `ruta-service` cae, todo `/api/rutas/**` responde 503 y `/api/redes/**` sigue sirviendo el mapa. |
+| Qué se pierde | El identificador de la red viaja como parámetro (`redId`, por defecto 1) en vez de ir en la ruta. |
+| Fecha y quién | 13 nov 2026 · Santiago (SCRUM-23). |
 
 ---
 
