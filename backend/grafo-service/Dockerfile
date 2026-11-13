@@ -15,6 +15,8 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 COPY --from=builder /app/target/grafo-service-*.jar app.jar
+# Red de 40 paradas y 90 tramos; GrafoService la busca en data/grafo_40_paradas.json
+COPY data ./data
 
 EXPOSE 8081
 
