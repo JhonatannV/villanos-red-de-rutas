@@ -57,7 +57,8 @@ services:
       - "8082:8082"
     environment:
       - GRAFO_SERVICE_URL=http://grafo-service:8081
-      - ALGORITHM_MODE=native
+      # native (C por JNA) o java; se puede cambiar al levantar: ALGORITHM_MODE=java docker compose up -d
+      - ALGORITHM_MODE=${ALGORITHM_MODE:-native}
       - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/rutas-realm/protocol/openid-connect/certs
     depends_on:
       keycloak:

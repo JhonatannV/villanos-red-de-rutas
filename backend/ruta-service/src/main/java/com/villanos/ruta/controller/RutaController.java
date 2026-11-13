@@ -8,6 +8,7 @@ import com.villanos.ruta.algoritmo.DijkstraJava.ResultadoRuta;
 import com.villanos.ruta.calculo.CalculadorRutas;
 import com.villanos.ruta.calculo.ModoAlgoritmo;
 import com.villanos.ruta.calculo.SelectorAlgoritmo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,9 +35,10 @@ public class RutaController {
     @Value("${services.grafo-service.url:http://localhost:8081}")
     private String grafoServiceUrl;
 
-    public RutaController() {
-        this.calculadorRutas = new SelectorAlgoritmo();
-        this.restTemplate = new RestTemplate();
+    /** El selector lo crea AlgoritmoConfig a partir de app.algorithm.mode. */
+    @Autowired
+    public RutaController(CalculadorRutas calculadorRutas) {
+        this(calculadorRutas, new RestTemplate());
     }
 
     public RutaController(CalculadorRutas calculadorRutas, RestTemplate restTemplate) {
