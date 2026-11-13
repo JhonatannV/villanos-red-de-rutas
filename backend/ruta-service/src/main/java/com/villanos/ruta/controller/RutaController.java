@@ -9,6 +9,9 @@ import com.villanos.ruta.calculo.CalculadorRutas;
 import com.villanos.ruta.calculo.ModoAlgoritmo;
 import com.villanos.ruta.calculo.SelectorAlgoritmo;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -46,13 +49,14 @@ public class RutaController {
                                           @RequestParam int hasta,
                                           @RequestParam(defaultValue = "1") int redId,
                                           @RequestParam(required = false) Integer sin,
-                                          @RequestParam(required = false) String modo) {
+                                          @RequestParam(required = false) String modo,
+                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String autorizacion) {
         CalculadorRutas calculador = this.calculadorRutas;
         if (modo != null && !modo.isBlank()) {
             calculador = new SelectorAlgoritmo(ModoAlgoritmo.desdeTexto(modo));
         }
 
-        RedEstructura red = obtenerRed(redId, sin);
+        RedEstructura red = obtenerRed(redId, sin, autorizacion);
         if (red == null || red.numParadas <= 0) {
             return ResponseEntity.badRequest().body(Map.of("error", "No se pudo obtener la red " + redId));
         }
@@ -97,11 +101,16 @@ public class RutaController {
         }
     }
 
-    private RedEstructura obtenerRed(int redId, Integer tramoCerradoId) {
-        // 1. Intenta consultar grafo-service por HTTP
+    private RedEstructura obtenerRed(int redId, Integer tramoCerradoId, String autorizacion) {
+        // 1. Intenta consultar grafo-service por HTTP, reenviando el token del usuario:
+        //    grafo-service es resource server y sin token responde 401
         try {
             String url = grafoServiceUrl + "/api/redes/" + redId;
-            String jsonResp = restTemplate.getForObject(url, String.class);
+            HttpHeaders cabeceras = new HttpHeaders();
+            if (autorizacion != null && !autorizacion.isBlank()) {
+                cabeceras.set(HttpHeaders.AUTHORIZATION, autorizacion);
+            }
+            String jsonResp = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(cabeceras), String.class).getBody();
             if (jsonResp != null && !jsonResp.isBlank()) {
                 return parsearRedJson(jsonResp, tramoCerradoId);
             }
