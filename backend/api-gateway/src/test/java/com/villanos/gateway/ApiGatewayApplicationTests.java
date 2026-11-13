@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.net.InetSocketAddress;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,16 +33,31 @@ class ApiGatewayApplicationTests {
     }
 
     @Test
-    void actuatorHealthRetornaUp() throws Exception {
+    void actuatorHealthRetornaUpSinAutenticacion() throws Exception {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test
-    void rutaServiceApagadoResponde503EnMenosDeDosSegundos() throws Exception {
-        long tInicio = System.currentTimeMillis();
+    void peticionSinTokenRetorna401Unauthorized() throws Exception {
+        // Criterio de aceptacion SCRUM-20: Peticion sin token responde 401
         mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void peticionConTokenAlteradoRetorna401Unauthorized() throws Exception {
+        // Criterio de aceptacion SCRUM-20: Peticion con token alterado en su firma responde 401
+        mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11")
+                        .header("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.tokenFalsoAlterado.firmaInvalida123"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void rutaServiceApagadoResponde503EnMenosDeDosSegundosConTokenValido() throws Exception {
+        long tInicio = System.currentTimeMillis();
+        mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11").with(jwt()))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.status").value(503))
                 .andExpect(jsonPath("$.servicio").value("ruta-service"))
@@ -54,7 +69,7 @@ class ApiGatewayApplicationTests {
     }
 
     @Test
-    void rutaServiceLentoCortaExactamenteEnTimeoutDosSegundos() throws Exception {
+    void rutaServiceLentoCortaExactamenteEnTimeoutDosSegundosConTokenValido() throws Exception {
         // Servidor HTTP de prueba que tarda 4.0s (mayor que el timeout de 2.0s de ruta-service)
         HttpServer slowServer = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         slowServer.createContext("/api/rutas/calcular", exchange -> {
@@ -74,7 +89,7 @@ class ApiGatewayApplicationTests {
 
         try {
             long tInicio = System.currentTimeMillis();
-            mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11"))
+            mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11").with(jwt()))
                     .andExpect(status().isServiceUnavailable())
                     .andExpect(jsonPath("$.status").value(503))
                     .andExpect(jsonPath("$.servicio").value("ruta-service"))
