@@ -31,6 +31,11 @@ services:
     container_name: grafo-service
     ports:
       - "8081:8081"
+    environment:
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/rutas-realm/protocol/openid-connect/certs
+    depends_on:
+      keycloak:
+        condition: service_healthy
     networks:
       - red-de-rutas-net
     healthcheck:
@@ -52,7 +57,10 @@ services:
     environment:
       - GRAFO_SERVICE_URL=http://grafo-service:8081
       - ALGORITHM_MODE=native
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/rutas-realm/protocol/openid-connect/certs
     depends_on:
+      keycloak:
+        condition: service_healthy
       grafo-service:
         condition: service_healthy
     networks:
@@ -76,7 +84,10 @@ services:
     environment:
       - GRAFO_SERVICE_URL=http://grafo-service:8081
       - RUTA_SERVICE_URL=http://ruta-service:8082
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/rutas-realm/protocol/openid-connect/certs
     depends_on:
+      keycloak:
+        condition: service_healthy
       grafo-service:
         condition: service_healthy
       ruta-service:
