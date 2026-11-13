@@ -20,7 +20,8 @@ Microservicio dueño de los algoritmos de cálculo.
 | `native` (por defecto) | Usa `libgrafo.so` (C) por JNA. Si la biblioteca no carga, o una llamada falla con `UnsatisfiedLinkError`, cambia a Java y lo registra en el log. |
 | `java` | Usa `DijkstraJava` y no intenta cargar la biblioteca. |
 
-- El modo se lee de la propiedad del sistema `app.algorithm.mode` o de la variable de entorno `APP_ALGORITHM_MODE`. Un valor distinto de `native` o `java` detiene el arranque con un mensaje claro.
+- En el servicio, `AlgoritmoConfig` crea el selector con la propiedad de Spring `app.algorithm.mode`, que en `application.yml` toma la variable de entorno `ALGORITHM_MODE` (por defecto `native`). Un valor distinto de `native` o `java` detiene el arranque con un mensaje claro.
+- En Docker: `ALGORITHM_MODE=java docker compose up -d ruta-service` cambia de implementación sin tocar archivos.
 - JNA busca la biblioteca en `jna.library.path` (`libgrafo.so` en Linux, `grafo.dll` en Windows).
 - Las entradas se validan antes de elegir implementación, con las reglas de `native/grafo.h`. Así una entrada inválida produce el mismo `IllegalArgumentException` en los dos modos.
 - Códigos de C:
@@ -28,7 +29,7 @@ Microservicio dueño de los algoritmos de cálculo.
   - `-4`: sin memoria; la consulta se repite en Java;
   - `-5`: `ArithmeticException`;
   - cualquier código no documentado: `IllegalStateException`.
-- `modoEfectivo()` y `motivo()` informan qué implementación está activa y por qué.
+- `GET /actuator/info` publica el modo pedido, el activo y el motivo, por ejemplo: `{"algoritmo":{"modoPedido":"native","modoEfectivo":"native","motivo":"biblioteca nativa cargada"}}`. La respuesta de `/api/rutas/calcular` incluye `modoEfectivo`.
 
 Pruebas: `mvn test`. Las que necesitan la biblioteca real se omiten si no está compilada en `native/`:
 - en Windows: `gcc -O2 -shared -o native/grafo.dll native/dijkstra.c`;
