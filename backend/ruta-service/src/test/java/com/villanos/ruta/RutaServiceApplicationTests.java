@@ -49,7 +49,8 @@ class RutaServiceApplicationTests {
     @Test
     void endpointCalcularRutaDevuelveCasoManualEsperadoConTokenValido() throws Exception {
         // Caso 1: 0 -> 11 en red 1 (esperado costo 10, camino [0, 9, 10, 11])
-        mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11&redId=1").with(jwt()))
+        mockMvc.perform(get("/api/rutas/calcular?desde=0&hasta=11&redId=1")
+                        .with(jwt().authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_consultor"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.costoTotal").value(10))
                 .andExpect(jsonPath("$.camino[0]").value(0))
