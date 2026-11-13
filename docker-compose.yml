@@ -1,4 +1,28 @@
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_HTTP_ENABLED=true
+    volumes:
+      - ./keycloak/rutas-realm.json:/opt/keycloak/data/import/rutas-realm.json:ro
+    ports:
+      - "8085:8080"
+    networks:
+      - red-de-rutas-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
   grafo-service:
     build:
       context: ./backend/grafo-service
