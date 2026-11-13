@@ -21,6 +21,7 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-09](#d-09) | Las entradas se validan antes de elegir implementación | Tomada |
 | [D-10](#d-10) | BFS, DFS, conectividad y ciclos se implementan en Java | Tomada |
 | [D-11](#d-11) | Los endpoints de algoritmos cuelgan de `/api/rutas` | Tomada |
+| [D-12](#d-12) | La red se representa como lista de adyacencia, no como matriz | Tomada y medida |
 | — | Abiertas: origen de la traza, carga del `.so`, caché de la red, Swarm o Kubernetes | [Ver al final](#decisiones-abiertas) |
 
 ---
@@ -147,6 +148,17 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Qué se pierde | El identificador de la red viaja como parámetro (`redId`, por defecto 1) en vez de ir en la ruta. |
 | Fecha y quién | 13 nov 2026 · Santiago (SCRUM-23). |
 
+### D-12
+**La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` como en los algoritmos de `ruta-service`. No se usa matriz de adyacencia.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | Matriz de adyacencia V × V con el peso de cada tramo. |
+| Por qué se descartó | La red es dispersa: 90 tramos de 780 pares posibles (11,5 %). La matriz ocupa 4·V² bytes y la lista 4·(V + 1 + 4E): **6.400 B contra 1.604 B** con 40 paradas, y **640.000 B contra 19.204 B** con 400 paradas y 1.100 tramos. La matriz solo ocuparía menos con 390 tramos o más en la red de 40 paradas. Además, Dijkstra, BFS y DFS recorren los vecinos de cada parada: con la lista eso cuesta su grado, y con la matriz cuesta V por parada, lo que lleva Dijkstra hacia O(V²). |
+| Requisito de calidad | **A-RQ-01 y W-RQ-03 Desempeño**: tiempo por consulta en la red de 400 paradas (medido en SCRUM-6: 30 µs con lista y montículo). |
+| Qué se pierde | Saber si existe un tramo entre dos paradas pasa de un paso (matriz) a revisar los vecinos de una de ellas (máximo 9 en la red actual). |
+| Fecha y quién | 13 nov 2026 · Santiago (SCRUM-25). Cálculo en `GET /api/rutas/memoria`. |
+
 ---
 
 ## Decisiones abiertas
@@ -158,6 +170,5 @@ Se registran aquí para no perderlas. Cada una pasa a una entrada D-xx cuando se
 | **De dónde sale la traza paso a paso** (RF-04) | (a) La calcula Java aunque el camino lo dé C. (b) Una segunda función en C que llene también la traza. | W-RQ-03: pedir la traza no puede duplicar el tiempo. A-RQ-01. | SCRUM-14/15 |
 | **Cómo se carga `libgrafo.so` en el contenedor** | `jna.library.path` (ya usado en pruebas, SCRUM-15), `LD_LIBRARY_PATH` o `Native.load` con ruta absoluta | A-RQ-03 Facilidad de despliegue | SCRUM-16 |
 | **Red en caché o pedida en cada consulta** | Pedirla a `grafo-service` siempre, o guardarla en `ruta-service` e invalidarla cuando cambie | W-RQ-03 Desempeño contra correctitud | SCRUM-14 |
-| **Lista o matriz de adyacencia** en `ruta-service` | Lista (proporcional a los tramos) o matriz (160.000 casillas con 400 paradas, casi vacías) | RF-07, W-RQ-03 | SCRUM-25 |
 | **Orquestador** | Docker Swarm o Kubernetes | A-RQ-03 | SCRUM-38 |
 | **Dónde se valida la autorización** | Solo en el gateway, o en cada servicio | Seguridad | SCRUM-20/21 |
