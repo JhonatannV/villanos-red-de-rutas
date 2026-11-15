@@ -243,4 +243,42 @@ describe('GrafoVisorComponent (Criterio de Aceptacion RF-02 Visualizador)', () =
 
     expect(colisiones).toBe(0);
   });
+
+  it('debe calcular la ruta optima con Dijkstra entre Terminal de Transportes (0) y Coliseo Benicio (11)', () => {
+    redService.paradas.set(mockParadas40);
+    redService.tramos.set(mockTramos90);
+
+    const orig = mockParadas40[0]; // Terminal de Transportes (0)
+    const dest = mockParadas40[11]; // Coliseo Benicio (11)
+
+    component.marcarComoOrigen(orig);
+    component.marcarComoDestino(dest);
+
+    const ruta = component.rutaOptima();
+    expect(ruta).toBeTruthy();
+    expect(ruta?.encontrada).toBe(true);
+    // Costo óptimo esperado según el caso de prueba 1: 10 minutos
+    expect(ruta?.costoTotal).toBe(10);
+    // Secuencia de paradas esperada: [0, 9, 10, 11]
+    const ids = ruta?.paradas.map(p => p.id);
+    expect(ids).toEqual([0, 9, 10, 11]);
+  });
+
+  it('debe detectar cuando un destino queda inalcanzable por contingencia vial (cierre de tramo 90)', () => {
+    // Clonar tramos y cerrar el tramo 90 (Salida Sur [36] <-> Peaje Aeropuerto [37])
+    const tramosConPuenteCerrado = mockTramos90.map(t => t.id === 90 ? { ...t, abierto: false } : t);
+    redService.paradas.set(mockParadas40);
+    redService.tramos.set(tramosConPuenteCerrado);
+
+    const orig = mockParadas40[0]; // Terminal de Transportes (0)
+    const dest = mockParadas40[39]; // Zona Rural La Marina (39)
+
+    component.marcarComoOrigen(orig);
+    component.marcarComoDestino(dest);
+
+    const ruta = component.rutaOptima();
+    expect(ruta).toBeTruthy();
+    expect(ruta?.encontrada).toBe(false);
+    expect(ruta?.mensaje).toContain('No existe camino vial disponible');
+  });
 });
