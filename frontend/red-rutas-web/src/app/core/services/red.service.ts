@@ -4,6 +4,7 @@ import { Observable, tap, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Parada, Tramo, RedGrafo } from '../models/red.model';
 import { RED_DEFAULT_40 } from '../models/red-default.data';
+import { RED_GRANDE_400 } from '../models/red-400.data';
 
 @Injectable({
   providedIn: 'root'
@@ -46,16 +47,31 @@ export class RedService {
         const respaldo = this.obtenerDeAlmacenamientoLocal(redId);
         if (respaldo) {
           this.aplicarRed(respaldo);
-          this.mensajeExito.set('Red cargada desde persistencia local segura.');
+          this.mensajeExito.set(`Red cargada desde persistencia local segura (${respaldo.paradas.length} paradas, ${respaldo.tramos.length} tramos).`);
         } else {
-          this.aplicarRed(RED_DEFAULT_40);
-          this.guardarEnAlmacenamientoLocal(RED_DEFAULT_40);
-          this.mensajeExito.set('Red cargada con dataset predeterminado (40 paradas, 90 tramos).');
+          const fallback = redId === 2 ? RED_GRANDE_400 : RED_DEFAULT_40;
+          this.aplicarRed(fallback);
+          this.guardarEnAlmacenamientoLocal(fallback);
+          this.mensajeExito.set(`Red cargada con dataset predeterminado (${fallback.paradas.length} paradas, ${fallback.tramos.length} tramos).`);
         }
         this.cargando.set(false);
         return of(this.redActual()!);
       })
     );
+  }
+
+  /**
+   * Carga la red grande de 400 paradas y 1.100 tramos para mediciones de desempeño (W-RQ-02)
+   */
+  cargarRedGrande(): Observable<RedGrafo> {
+    return this.cargarRed(2);
+  }
+
+  /**
+   * Carga la red urbana estándar de 40 paradas y 90 tramos
+   */
+  cargarRedUrbana(): Observable<RedGrafo> {
+    return this.cargarRed(1);
   }
 
   /**

@@ -170,6 +170,17 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 | Qué se pierde | Con grafos de más de 10.000 nodos el DOM SVG puede tener mayor costo en memoria que un canvas rasterizado, pero la red de transporte del proyecto opera en el orden de decenas a centenas de nodos, donde SVG es significativamente más eficiente y declarativo. |
 | Fecha y quién | 14 nov 2026 · Jhonatan (SCRUM-30). |
 
+### D-14
+**Optimización de Cómputo Espacial mediante Spatial Hash Grid con Complejidad Lineal $O(M)$ para Renderizado de Red Masiva (400 Paradas y 1.100 Tramos) en Angular SVG**, en lugar de búsqueda cuadrática exhaustiva $O(M^2)$.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | Búsqueda exhaustiva por pares $\sum_{i=1}^{M} i = \frac{M(M-1)}{2} \approx 604.450$ comparaciones ($O(M^2)$) para resolución de proximidad de etiquetas. |
+| Por qué se descartó | El requisito **W-RQ-02** exige taxativamente **crecimiento lineal en tramos** y **ninguna tarea del hilo principal superior a 100 ms**. Al escalar de 90 a 1.100 tramos, un algoritmo $O(M^2)$ escalaría su tiempo $\approx 150\times$, provocando caídas de cuadros (*jank*) y degradación perceptible en la experiencia de usuario. |
+| Requisito de calidad | **W-RQ-02 Desempeño**: La indexación espacial por celdas fijas de $24\text{px}$ acota la búsqueda a las 9 celdas adyacentes ($O(1)$ por tramo), reduciendo el cómputo de 1.100 tramos a **1.27 ms** (escala lineal $10.96\times$ idéntica al incremento de tramos $12.22\times$), dibujo inicial en **702 ms** ($< 2.000\text{ ms}$) y microtareas en hilo principal en **36.5 ms** ($< 100\text{ ms}$). |
+| Qué se pierde | Se requiere una estructura de datos `Map<string, EtiquetaPeso[]>` adicional en memoria durante el cálculo de la señal computada, la cual se recolecta inmediatamente al finalizar la evaluación reactiva. |
+| Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-35). |
+
 ---
 
 ## Decisiones abiertas

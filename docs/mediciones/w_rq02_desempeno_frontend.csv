@@ -1,0 +1,6 @@
+Paradas,Tramos,TiempoPromedioMs,TiempoMaximoMs,ComplejidadObservada,CumpleWRQ02
+40,90,0.1157,0.6517,O(M) Lineal,SI
+100,250,0.1995,0.4936,O(M) Lineal,SI
+200,500,0.3836,0.9571,O(M) Lineal,SI
+300,800,0.7490,1.2367,O(M) Lineal,SI
+400,1100,1.2707,1.9339,O(M) Lineal,SI

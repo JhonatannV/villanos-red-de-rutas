@@ -34,34 +34,37 @@ public class GrafoService {
     }
 
     public synchronized void cargarRedPorDefecto() {
+        cargarArchivoRed(rutaJsonConfig, 1);
+        cargarArchivoRed("grafo_40_paradas.json", 1);
+        cargarArchivoRed("grafo_400_paradas.json", 2);
+
+        if (!redes.containsKey(1)) {
+            RedGrafo redFallback = new RedGrafo(1, "Red Base Fallback", new ArrayList<>(), new ArrayList<>());
+            redes.put(1, redFallback);
+        }
+    }
+
+    private void cargarArchivoRed(String nombreArchivo, int idFallback) {
+        if (nombreArchivo == null || nombreArchivo.isBlank()) return;
         List<Path> candidatos = Arrays.asList(
-                Paths.get(rutaJsonConfig),
-                Paths.get("data/grafo_40_paradas.json"),
-                Paths.get("backend/grafo-service/data/grafo_40_paradas.json"),
-                Paths.get("../grafo-service/data/grafo_40_paradas.json")
+                Paths.get(nombreArchivo),
+                Paths.get("data", nombreArchivo),
+                Paths.get("backend", "grafo-service", "data", nombreArchivo),
+                Paths.get("..", "grafo-service", "data", nombreArchivo)
         );
 
-        File archivoEncontrado = null;
         for (Path p : candidatos) {
             File f = p.toFile();
             if (f.exists() && f.isFile()) {
-                archivoEncontrado = f;
-                break;
+                try {
+                    RedGrafo red = objectMapper.readValue(f, RedGrafo.class);
+                    redes.put(red.getRedId(), red);
+                    return;
+                } catch (IOException e) {
+                    System.err.println("Error leyendo JSON de red " + nombreArchivo + ": " + e.getMessage());
+                }
             }
         }
-
-        if (archivoEncontrado != null) {
-            try {
-                RedGrafo red = objectMapper.readValue(archivoEncontrado, RedGrafo.class);
-                redes.put(red.getRedId(), red);
-                return;
-            } catch (IOException e) {
-                System.err.println("Error leyendo JSON de red: " + e.getMessage());
-            }
-        }
-
-        RedGrafo redFallback = new RedGrafo(1, "Red Base Fallback", new ArrayList<>(), new ArrayList<>());
-        redes.put(1, redFallback);
     }
 
     public Optional<RedGrafo> obtenerRed(int redId) {

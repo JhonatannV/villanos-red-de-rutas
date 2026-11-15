@@ -53,16 +53,19 @@ export class GrafoVisorComponent {
   private initialPanX = 0;
   private initialPanY = 0;
 
-  // viewBox dinámico computado a partir del zoom y paneo
+  // viewBox dinámico computado a partir del zoom, paneo y escala de la red
   readonly viewBox = computed(() => {
-    const w = Math.round((this.BASE_WIDTH / this.zoom()) * 10) / 10;
-    const h = Math.round((this.BASE_HEIGHT / this.zoom()) * 10) / 10;
+    const total = this.redService.totalParadas();
+    const baseW = total > 100 ? 2500 : this.BASE_WIDTH;
+    const baseH = total > 100 ? 1750 : this.BASE_HEIGHT;
+    const w = Math.round((baseW / this.zoom()) * 10) / 10;
+    const h = Math.round((baseH / this.zoom()) * 10) / 10;
     const x = this.panX();
     const y = this.panY();
     return `${x} ${y} ${w} ${h}`;
   });
 
-  // Cálculo anti-solapamiento de etiquetas de peso (Criterio de Aceptación RF-02)
+  // Cálculo anti-solapamiento de etiquetas de peso con complejidad O(M) lineal (W-RQ-02 / RF-02)
   readonly etiquetasPeso = computed<EtiquetaPeso[]>(() => {
     const paradas = this.redService.paradas();
     const tramos = this.redService.tramos();
@@ -72,9 +75,14 @@ export class GrafoVisorComponent {
     }
 
     const mapaParadas = new Map<number, Parada>();
-    paradas.forEach(p => mapaParadas.set(p.id, p));
+    for (let i = 0; i < paradas.length; i++) {
+      mapaParadas.set(paradas[i].id, paradas[i]);
+    }
 
     const etiquetas: EtiquetaPeso[] = [];
+    const CELL_SIZE = 24;
+    const minDistSq = 16 * 16;
+    const spatialGrid = new Map<string, EtiquetaPeso[]>();
 
     for (let i = 0; i < tramos.length; i++) {
       const t = tramos[i];
@@ -115,27 +123,49 @@ export class GrafoVisorComponent {
       finalX += dirX * offsetAlong;
       finalY += dirY * offsetAlong;
 
-      // Resolución iterativa de proximidad si colisiona con alguna ya calculada
-      for (let j = 0; j < etiquetas.length; j++) {
-        const exist = etiquetas[j];
-        const diffX = finalX - exist.x;
-        const diffY = finalY - exist.y;
-        const distSq = diffX * diffX + diffY * diffY;
-        const minDist = 16;
+      // Resolución de proximidad anti-solapamiento O(M) mediante Spatial Hash Grid
+      const gx = Math.floor(finalX / CELL_SIZE);
+      const gy = Math.floor(finalY / CELL_SIZE);
+      let collision = false;
 
-        if (distSq < minDist * minDist) {
-          finalX += dirX * 14 + perpX * 10;
-          finalY += dirY * 14 + perpY * 10;
+      for (let ox = -1; ox <= 1 && !collision; ox++) {
+        for (let oy = -1; oy <= 1 && !collision; oy++) {
+          const bucket = spatialGrid.get(`${gx + ox}_${gy + oy}`);
+          if (bucket) {
+            for (let b = 0; b < bucket.length; b++) {
+              const exist = bucket[b];
+              const diffX = finalX - exist.x;
+              const diffY = finalY - exist.y;
+              if (diffX * diffX + diffY * diffY < minDistSq) {
+                finalX += dirX * 14 + perpX * 10;
+                finalY += dirY * 14 + perpY * 10;
+                collision = true;
+                break;
+              }
+            }
+          }
         }
       }
 
-      etiquetas.push({
+      const nuevaEtiqueta: EtiquetaPeso = {
         tramoId: t.id,
         x: Math.round(finalX * 10) / 10,
         y: Math.round(finalY * 10) / 10,
         peso: t.peso,
         abierto: t.abierto
-      });
+      };
+
+      etiquetas.push(nuevaEtiqueta);
+
+      const newGx = Math.floor(nuevaEtiqueta.x / CELL_SIZE);
+      const newGy = Math.floor(nuevaEtiqueta.y / CELL_SIZE);
+      const cellKey = `${newGx}_${newGy}`;
+      const bucket = spatialGrid.get(cellKey);
+      if (bucket) {
+        bucket.push(nuevaEtiqueta);
+      } else {
+        spatialGrid.set(cellKey, [nuevaEtiqueta]);
+      }
     }
 
     return etiquetas;
