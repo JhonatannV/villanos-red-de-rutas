@@ -82,7 +82,18 @@ public class GatewayController {
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
             HttpEntity<byte[]> entity = new HttpEntity<>(body, headers);
 
-            return restTemplate.exchange(URI.create(targetUrl), method, entity, byte[].class);
+            ResponseEntity<byte[]> response = restTemplate.exchange(URI.create(targetUrl), method, entity, byte[].class);
+
+            HttpHeaders cleanHeaders = new HttpHeaders();
+            response.getHeaders().forEach((header, values) -> {
+                if (!header.toLowerCase().startsWith("access-control-")) {
+                    cleanHeaders.put(header, values);
+                }
+            });
+
+            return ResponseEntity.status(response.getStatusCode())
+                    .headers(cleanHeaders)
+                    .body(response.getBody());
 
         } catch (ResourceAccessException e) {
             // RQ-01: El servicio de atras no responde o excedio el timeout de 2s -> HTTP 503 explicativo
@@ -110,8 +121,16 @@ public class GatewayController {
 
         } catch (HttpStatusCodeException e) {
             // Propagar el codigo HTTP que devolvio el servicio de atras (ej. 400, 404, etc.)
+            HttpHeaders cleanHeaders = new HttpHeaders();
+            if (e.getResponseHeaders() != null) {
+                e.getResponseHeaders().forEach((header, values) -> {
+                    if (!header.toLowerCase().startsWith("access-control-")) {
+                        cleanHeaders.put(header, values);
+                    }
+                });
+            }
             return ResponseEntity.status(e.getStatusCode())
-                    .headers(e.getResponseHeaders())
+                    .headers(cleanHeaders)
                     .body(e.getResponseBodyAsByteArray());
         } catch (Exception e) {
             Map<String, Object> errorBody = new LinkedHashMap<>();
