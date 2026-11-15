@@ -1,0 +1,135 @@
+<div class="visor-wrapper">
+  <!-- Barra de Herramientas y Controles de Zoom/Paneo -->
+  <div class="visor-toolbar">
+    <div class="toolbar-title">
+      <span class="icon">&#x1F5FA;</span>
+      <h3>Mapa Visual del Grafo de Transporte</h3>
+      <span class="badge badge-counter">{{ redService.totalParadas() }} Nodos &middot; {{ redService.totalTramos() }} Aristas</span>
+    </div>
+
+    <div class="toolbar-controls">
+      <div class="zoom-controls">
+        <button class="tool-btn" (click)="zoomIn()" title="Acercar (Zoom In)">&#x2795;</button>
+        <span class="zoom-level">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
+        <button class="tool-btn" (click)="zoomOut()" title="Alejar (Zoom Out)">&#x2796;</button>
+        <button class="tool-btn tool-btn-reset" (click)="resetVista()" title="Restablecer posición inicial">&#x21BA; Reset</button>
+      </div>
+      <div class="pan-hint">
+        <span class="hint-text">&#x1F5B1; Arrastra para panear &middot; Rueda para zoom</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Interactivo SVG con Paneo y Zoom -->
+  <div class="canvas-container">
+    <svg #svgCanvas
+         class="grafo-canvas"
+         [attr.viewBox]="viewBox()"
+         (mousedown)="onMouseDown($event)"
+         (mousemove)="onMouseMove($event)"
+         (wheel)="onWheel($event)">
+
+      <!-- Patrón de fondo (cuadrícula sutil) -->
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.8"/>
+        </pattern>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.5"/>
+        </filter>
+      </defs>
+
+      <rect width="100%" height="100%" fill="url(#grid)" />
+
+      <!-- Capa 1: Aristas / Tramos -->
+      <g class="edges-layer">
+        @for (tramo of redService.tramos(); track tramo.id) {
+          @let c1 = getCoordenadaParada(tramo.origen);
+          @let c2 = getCoordenadaParada(tramo.destino);
+          @let conectado = esTramoConectado(tramo);
+
+          <line [attr.x1]="c1.x"
+                [attr.y1]="c1.y"
+                [attr.x2]="c2.x"
+                [attr.y2]="c2.y"
+                class="tramo-line"
+                [class.tramo-abierto]="tramo.abierto"
+                [class.tramo-cerrado]="!tramo.abierto"
+                [class.tramo-highlight]="conectado" />
+        }
+      </g>
+
+      <!-- Capa 2: Etiquetas de Peso (Posicionamiento sin solapamiento RF-02) -->
+      <g class="weights-layer">
+        @for (etiqueta of etiquetasPeso(); track etiqueta.tramoId) {
+          <g class="weight-group" [attr.transform]="'translate(' + etiqueta.x + ',' + etiqueta.y + ')'">
+            <!-- Fondo pastilla del peso -->
+            <rect x="-14" y="-8" width="28" height="16" rx="3" ry="3"
+                  class="weight-badge"
+                  [class.weight-closed]="!etiqueta.abierto" />
+            <!-- Texto del peso en minutos -->
+            <text x="0" y="3" text-anchor="middle" class="weight-text">
+              {{ etiqueta.peso }}m
+            </text>
+          </g>
+        }
+      </g>
+
+      <!-- Capa 3: Nodos / Paradas -->
+      <g class="nodes-layer">
+        @for (parada of redService.paradas(); track parada.id) {
+          @let seleccionado = paradaSeleccionada()?.id === parada.id;
+
+          <g class="node-group"
+             [attr.transform]="'translate(' + parada.x + ',' + parada.y + ')'"
+             (click)="seleccionarParada(parada)">
+            <!-- Círculo exterior con halo en selección -->
+            <circle r="14"
+                    class="node-circle"
+                    [class.node-selected]="seleccionado"
+                    filter="url(#shadow)" />
+            <!-- ID numérico de la parada -->
+            <text x="0" y="4" text-anchor="middle" class="node-id">
+              {{ parada.id }}
+            </text>
+            <!-- Etiqueta con nombre de la parada -->
+            <text x="0" y="24" text-anchor="middle" class="node-label">
+              {{ parada.nombre | slice:0:18 }}
+            </text>
+          </g>
+        }
+      </g>
+    </svg>
+
+    <!-- Panel flotante informativo al seleccionar parada -->
+    @if (paradaSeleccionada()) {
+      <div class="node-detail-card">
+        <div class="detail-header">
+          <h4>Estación Seleccionada</h4>
+          <button class="close-btn" (click)="paradaSeleccionada.set(null)">&times;</button>
+        </div>
+        <div class="detail-body">
+          <p><strong>ID:</strong> {{ paradaSeleccionada()?.id }}</p>
+          <p><strong>Nombre:</strong> {{ paradaSeleccionada()?.nombre }}</p>
+          <p><strong>Coordenadas:</strong> ({{ paradaSeleccionada()?.x }}, {{ paradaSeleccionada()?.y }})</p>
+        </div>
+      </div>
+    }
+
+    <!-- Leyenda de colores -->
+    <div class="map-legend">
+      <div class="legend-item">
+        <span class="legend-color legend-open"></span>
+        <span>Tramo Abierto</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color legend-closed"></span>
+        <span>Tramo Cerrado (Cierre vial)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-badge">5m</span>
+        <span>Peso (minutos de viaje)</span>
+      </div>
+    </div>
+  </div>
+</div>

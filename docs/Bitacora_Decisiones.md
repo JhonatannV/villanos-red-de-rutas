@@ -149,7 +149,7 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Fecha y quién | 13 nov 2026 · Santiago (SCRUM-23). |
 
 ### D-12
-**La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` como en los algoritmos de `ruta-service`. No se usa matriz de adyacencia.
+La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` como en los algoritmos de `ruta-service`. No se usa matriz de adyacencia.
 
 | Campo | Contenido |
 |---|---|
@@ -158,6 +158,17 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | Requisito de calidad | **A-RQ-01 y W-RQ-03 Desempeño**: tiempo por consulta en la red de 400 paradas (medido en SCRUM-6: 30 µs con lista y montículo). |
 | Qué se pierde | Saber si existe un tramo entre dos paradas pasa de un paso (matriz) a revisar los vecinos de una de ellas (máximo 9 en la red actual). |
 | Fecha y quién | 13 nov 2026 · Santiago (SCRUM-25). Cálculo en `GET /api/rutas/memoria`. |
+
+### D-13
+**Visualizador del Grafo en SVG Declarativo con Señales de Angular y Desplazamiento Vectorial Anticolisión** (`GrafoVisorComponent`), en lugar de HTML5 Canvas imperativo o bibliotecas externas pesadas (D3.js / Cytoscape).
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) HTML5 `<canvas>` con loop `requestAnimationFrame` imperativo. (b) Bibliotecas de grafos pesadas externas como Cytoscape.js o Vis.js. |
+| Por qué se descartaron | (a) Canvas rasteriza y pierde nitidez al hacer zoom; no se integra de forma reactiva con Angular Signals y requiere redibujar manualmente todo el contexto gráfico en cada evento de ratón. (b) Cytoscape y Vis.js agregan dependencias externas voluminosas (>500KB) que complican la gestión de bundles y desentonan con la arquitectura moderna de Signals de Angular 17+. |
+| Requisito de calidad | **RF-02 y A-RQ-02 Usabilidad**: SVG ofrece escalabilidad vectorial infinita, nitidez matemática en cualquier nivel de zoom, y el algoritmo de dispersión perpendicular/vectorial garantiza separación $\ge 14\text{px}$ entre todas las etiquetas de peso en redes densas. |
+| Qué se pierde | Con grafos de más de 10.000 nodos el DOM SVG puede tener mayor costo en memoria que un canvas rasterizado, pero la red de transporte del proyecto opera en el orden de decenas a centenas de nodos, donde SVG es significativamente más eficiente y declarativo. |
+| Fecha y quién | 14 nov 2026 · Jhonatan (SCRUM-30). |
 
 ---
 
