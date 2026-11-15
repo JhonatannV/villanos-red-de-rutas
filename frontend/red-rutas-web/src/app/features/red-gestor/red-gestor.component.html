@@ -1,0 +1,219 @@
+<div class="gestor-container">
+  <!-- Tarjetas de Metricas de la Red -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon">&#x1F68F;</div>
+      <div class="metric-data">
+        <span class="metric-val">{{ redService.totalParadas() }}</span>
+        <span class="metric-label">Paradas Totales</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">&#x1F6E4;</div>
+      <div class="metric-data">
+        <span class="metric-val">{{ redService.totalTramos() }}</span>
+        <span class="metric-label">Tramos de Conexión</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">&#x2705;</div>
+      <div class="metric-data">
+        <span class="metric-val metric-success">{{ redService.tramosAbiertos() }}</span>
+        <span class="metric-label">Tramos Abiertos</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">&#x1F6A7;</div>
+      <div class="metric-data">
+        <span class="metric-val metric-warning">{{ redService.tramosCerrados() }}</span>
+        <span class="metric-label">Tramos Cerrados</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificaciones de Exito o Error -->
+  @if (redService.mensajeExito()) {
+    <div class="alert alert-success">
+      <span>&#x2714; {{ redService.mensajeExito() }}</span>
+      <button class="close-btn" (click)="redService.limpiarMensajes()">&times;</button>
+    </div>
+  }
+
+  @if (redService.mensajeError()) {
+    <div class="alert alert-danger">
+      <span>&#x26A0; {{ redService.mensajeError() }}</span>
+      <button class="close-btn" (click)="redService.limpiarMensajes()">&times;</button>
+    </div>
+  }
+
+  <!-- Panel de Control y Formularios (Habilitado para planificador / admin) -->
+  <div class="forms-grid">
+    <!-- Formulario Crear Parada -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h3>&#x2795; Agregar Nueva Parada</h3>
+        @if (!authService.isPlanificador()) {
+          <span class="badge badge-locked">&#x1F512; Requiere rol planificador</span>
+        }
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="paradaNombre">Nombre de la Parada</label>
+          <input id="paradaNombre" type="text" class="form-control" placeholder="Ej: Estación Universitaria"
+                 [ngModel]="nuevaParadaNombre()" (ngModelChange)="nuevaParadaNombre.set($event)"
+                 [disabled]="!authService.isPlanificador()">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="paradaX">Coordenada X (Lat)</label>
+            <input id="paradaX" type="number" step="0.001" class="form-control"
+                   [ngModel]="nuevaParadaX()" (ngModelChange)="nuevaParadaX.set($event)"
+                   [disabled]="!authService.isPlanificador()">
+          </div>
+          <div class="form-group">
+            <label for="paradaY">Coordenada Y (Lon)</label>
+            <input id="paradaY" type="number" step="0.001" class="form-control"
+                   [ngModel]="nuevaParadaY()" (ngModelChange)="nuevaParadaY.set($event)"
+                   [disabled]="!authService.isPlanificador()">
+          </div>
+        </div>
+        <button class="btn btn-primary" (click)="crearParada()" [disabled]="!authService.isPlanificador() || redService.cargando()">
+          &#x1F4BE; Persistir Parada en Servidor
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulario Crear Tramo -->
+    <div class="card form-card">
+      <div class="card-header">
+        <h3>&#x2795; Agregar Nuevo Tramo</h3>
+        @if (!authService.isPlanificador()) {
+          <span class="badge badge-locked">&#x1F512; Requiere rol planificador</span>
+        }
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tramoOrigen">Parada Origen</label>
+            <select id="tramoOrigen" class="form-control"
+                    [ngModel]="nuevoTramoOrigen()" (ngModelChange)="nuevoTramoOrigen.set($event)"
+                    [disabled]="!authService.isPlanificador()">
+              @for (p of redService.paradas(); track p.id) {
+                <option [value]="p.id">{{ p.nombre }} (ID: {{ p.id }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tramoDestino">Parada Destino</label>
+            <select id="tramoDestino" class="form-control"
+                    [ngModel]="nuevoTramoDestino()" (ngModelChange)="nuevoTramoDestino.set($event)"
+                    [disabled]="!authService.isPlanificador()">
+              @for (p of redService.paradas(); track p.id) {
+                <option [value]="p.id">{{ p.nombre }} (ID: {{ p.id }})</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="tramoPeso">Peso del Tramo (Minutos &gt; 0)</label>
+          <input id="tramoPeso" type="number" min="1" class="form-control"
+                 [ngModel]="nuevoTramoPeso()" (ngModelChange)="nuevoTramoPeso.set($event)"
+                 [disabled]="!authService.isPlanificador()">
+        </div>
+        <button class="btn btn-primary" (click)="crearTramo()" [disabled]="!authService.isPlanificador() || redService.cargando()">
+          &#x1F4BE; Persistir Tramo en Servidor
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seccion de Listados y Persistencia -->
+  <div class="card table-card">
+    <div class="card-header flex-header">
+      <div class="tabs">
+        <button class="tab-btn" [class.active]="tabActiva() === 'paradas'" (click)="tabActiva.set('paradas')">
+          &#x1F68F; Paradas ({{ redService.totalParadas() }})
+        </button>
+        <button class="tab-btn" [class.active]="tabActiva() === 'tramos'" (click)="tabActiva.set('tramos')">
+          &#x1F6E4; Tramos ({{ redService.totalTramos() }})
+        </button>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" (click)="recargarRed()" [disabled]="redService.cargando()">
+          &#x1F504; Recargar desde Servidor
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (tabActiva() === 'paradas') {
+        <div class="filter-bar">
+          <input type="text" class="form-control search-input" placeholder="Buscar parada por nombre o ID..."
+                 [ngModel]="filtroParada()" (ngModelChange)="filtroParada.set($event)">
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre de la Parada</th>
+                <th>Coordenada X</th>
+                <th>Coordenada Y</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (parada of paradasFiltradas(); track parada.id) {
+                <tr>
+                  <td><span class="id-badge">{{ parada.id }}</span></td>
+                  <td class="font-bold">{{ parada.nombre }}</td>
+                  <td>{{ parada.x }}</td>
+                  <td>{{ parada.y }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Peso (min)</th>
+                <th>Estado Vial</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tramo of redService.tramos(); track tramo.id) {
+                <tr [class.row-closed]="!tramo.abierto">
+                  <td><span class="id-badge">{{ tramo.id }}</span></td>
+                  <td>{{ getParadaNombre(tramo.origen) }}</td>
+                  <td>{{ getParadaNombre(tramo.destino) }}</td>
+                  <td class="font-bold">{{ tramo.peso }} min</td>
+                  <td>
+                    @if (tramo.abierto) {
+                      <span class="status-badge status-open">Abierto</span>
+                    } @else {
+                      <span class="status-badge status-closed">Cerrado</span>
+                    }
+                  </td>
+                  <td>
+                    <button class="btn btn-sm" [class.btn-danger]="tramo.abierto" [class.btn-success]="!tramo.abierto"
+                            (click)="toggleEstadoTramo(tramo.id, tramo.abierto)"
+                            [disabled]="!authService.isPlanificador()">
+                      {{ tramo.abierto ? 'Cerrar Tramo' : 'Reabrir Tramo' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>

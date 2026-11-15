@@ -86,6 +86,16 @@ public class GrafoService {
         return nuevaParada;
     }
 
+    public synchronized Tramo agregarTramo(int redId, Tramo nuevoTramo) {
+        RedGrafo red = redes.computeIfAbsent(redId, id -> new RedGrafo(id, "Red " + id, new ArrayList<>(), new ArrayList<>()));
+        int maxId = red.getTramos().stream().mapToInt(Tramo::getId).max().orElse(-1);
+        if (nuevoTramo.getId() <= maxId) {
+            nuevoTramo.setId(maxId + 1);
+        }
+        red.getTramos().add(nuevoTramo);
+        return nuevoTramo;
+    }
+
     public synchronized Optional<Tramo> cambiarEstadoTramo(int redId, int tramoId, boolean abierto) {
         Optional<RedGrafo> opt = obtenerRed(redId);
         if (opt.isEmpty()) return Optional.empty();

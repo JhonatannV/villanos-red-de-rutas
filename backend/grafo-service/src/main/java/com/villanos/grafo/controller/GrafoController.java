@@ -57,6 +57,18 @@ public class GrafoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
+    @PostMapping("/{id}/tramos")
+    public ResponseEntity<Tramo> agregarTramo(@PathVariable int id,
+                                              @RequestBody Tramo tramo,
+                                              Authentication authentication) {
+        Tramo creado = grafoService.agregarTramo(id, tramo);
+        String sub = extraerSub(authentication);
+        String username = extraerUsername(authentication);
+        auditoriaService.registrarCambio(sub, username, "CREAR_TRAMO",
+                "Tramo agregado: id=" + creado.getId() + " (" + creado.getOrigen() + " -> " + creado.getDestino() + ", peso=" + creado.getPeso() + ")", id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+    }
+
     @PutMapping("/{id}/tramos/{tramoId}/estado")
     public ResponseEntity<Tramo> cambiarEstadoTramo(@PathVariable int id,
                                                     @PathVariable int tramoId,
