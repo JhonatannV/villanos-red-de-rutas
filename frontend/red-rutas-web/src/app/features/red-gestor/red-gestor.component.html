@@ -116,17 +116,23 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="paradaX">Coordenada X (Canvas)</label>
-            <input id="paradaX" type="number" step="1" class="form-control"
+            <label for="paradaX">Coordenada X (50 - 1150 px)</label>
+            <input id="paradaX" type="number" min="50" max="1150" step="50" class="form-control"
                    [ngModel]="nuevaParadaX()" (ngModelChange)="nuevaParadaX.set($event)"
                    [disabled]="!authService.isPlanificador()">
           </div>
           <div class="form-group">
-            <label for="paradaY">Coordenada Y (Canvas)</label>
-            <input id="paradaY" type="number" step="1" class="form-control"
+            <label for="paradaY">Coordenada Y (50 - 750 px)</label>
+            <input id="paradaY" type="number" min="50" max="750" step="50" class="form-control"
                    [ngModel]="nuevaParadaY()" (ngModelChange)="nuevaParadaY.set($event)"
                    [disabled]="!authService.isPlanificador()">
           </div>
+        </div>
+        <div style="margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.75rem; color: #94a3b8;">Cuadrícula: paso de 50px</span>
+          <button type="button" class="btn btn-outline btn-sm" (click)="alinearACuadracula()" [disabled]="!authService.isPlanificador()" title="Ajustar a la cuadrícula de puntos">
+            Alinear a Cuadrícula
+          </button>
         </div>
         <button class="btn btn-primary btn-block" (click)="crearParada()" [disabled]="!authService.isPlanificador() || redService.cargando()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
