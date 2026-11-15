@@ -181,6 +181,17 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 | Qué se pierde | Se requiere una estructura de datos `Map<string, EtiquetaPeso[]>` adicional en memoria durante el cálculo de la señal computada, la cual se recolecta inmediatamente al finalizar la evaluación reactiva. |
 | Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-35). |
 
+### D-15
+**Reutilización de Conexiones HTTP Persistentes mediante `PoolingHttpClientConnectionManager` en API Gateway para Mitigar Latencia de Handshake y Cumplir $p95 < 400\text{ ms}$ (W-RQ-03)**, en lugar de instanciar sockets HTTP efímeros por cada consulta.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | Conexiones HTTP/1.1 efímeras creadas por petición sin pool compartido (`SimpleClientHttpRequestFactory`). |
+| Por qué se descartó | En ráfagas consecutivas de consultas (p. ej. 20 peticiones seguidas en horas pico o pruebas de carga), abrir y cerrar sockets TCP incrementa la sobrecarga por negociación de tres vías (three-way handshake) y agota los puertos locales (TIME_WAIT socket exhaustion), elevando el percentil 95 por encima del límite de 400 ms. |
+| Requisito de calidad | **W-RQ-03 Desempeño**: `PoolingHttpClientConnectionManager` mantiene conexiones TCP calientes hacia `ruta-service` y `grafo-service` con timeouts de $2.000\text{ ms}$, permitiendo responder ráfagas con latencia promedio de **4.95 ms** y **$p95 = 65.73\text{ ms}$** (83.6 % de margen de seguridad frente al límite de 400 ms). |
+| Qué se pierde | Se reserva un pequeño cupo constante de descriptores de archivo y memoria para el pool de conexiones en el proceso del API Gateway. |
+| Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-36). |
+
 ---
 
 ## Decisiones abiertas
