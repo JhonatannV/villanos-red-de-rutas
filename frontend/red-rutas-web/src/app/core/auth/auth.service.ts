@@ -46,10 +46,10 @@ export class AuthService {
         return false;
       }
 
-      // Timeout de seguridad: si Keycloak no responde en 1.5s (servidor offline),
+      // Timeout de seguridad: si Keycloak no responde en 8s (servidor offline),
       // continuar en modo degradado/invitado sin bloquear el inicio de la app.
       const timeoutPromise = new Promise<boolean>((_, reject) =>
-        setTimeout(() => reject(new Error('Keycloak no disponible (timeout)')), 1500)
+        setTimeout(() => reject(new Error('Keycloak no disponible (timeout)')), 8000)
       );
 
       const initPromise = this.keycloakInstance.init({
