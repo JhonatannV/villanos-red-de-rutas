@@ -11,6 +11,7 @@ services:
       - KC_HTTP_ENABLED=true
     volumes:
       - ./keycloak/rutas-realm.json:/opt/keycloak/data/import/rutas-realm.json:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
     ports:
       - "8085:8080"
     networks:
