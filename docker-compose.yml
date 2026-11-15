@@ -15,6 +15,14 @@ services:
       - "8085:8080"
     networks:
       - red-de-rutas-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     healthcheck:
       # La imagen de Keycloak no incluye curl ni wget: se consulta /health/ready con /dev/tcp de bash
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
@@ -39,6 +47,14 @@ services:
         condition: service_healthy
     networks:
       - red-de-rutas-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
@@ -67,6 +83,14 @@ services:
         condition: service_healthy
     networks:
       - red-de-rutas-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8082/actuator/health || exit 1"]
       interval: 10s
@@ -96,12 +120,49 @@ services:
         condition: service_healthy
     networks:
       - red-de-rutas-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend/red-rutas-web
+      dockerfile: Dockerfile
+    image: villanos/frontend:latest
+    container_name: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - red-de-rutas-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:80 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: unless-stopped
 
 networks:

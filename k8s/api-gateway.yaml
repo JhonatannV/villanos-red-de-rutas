@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: red-de-rutas
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: villanos/api-gateway:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: GRAFO_SERVICE_URL
+              value: "http://grafo-service.red-de-rutas.svc.cluster.local:8081"
+            - name: RUTA_SERVICE_URL
+              value: "http://ruta-service.red-de-rutas.svc.cluster.local:8082"
+            - name: KEYCLOAK_JWKS_URI
+              value: "http://keycloak.red-de-rutas.svc.cluster.local:8080/realms/rutas-realm/protocol/openid-connect/certs"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: red-de-rutas
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

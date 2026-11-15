@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ruta-service
+  namespace: red-de-rutas
+  labels:
+    app: ruta-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ruta-service
+  template:
+    metadata:
+      labels:
+        app: ruta-service
+    spec:
+      containers:
+        - name: ruta-service
+          image: villanos/ruta-service:latest
+          ports:
+            - containerPort: 8082
+              name: http
+          env:
+            - name: GRAFO_SERVICE_URL
+              value: "http://grafo-service.red-de-rutas.svc.cluster.local:8081"
+            - name: ALGORITHM_MODE
+              value: "native"
+            - name: KEYCLOAK_JWKS_URI
+              value: "http://keycloak.red-de-rutas.svc.cluster.local:8080/realms/rutas-realm/protocol/openid-connect/certs"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 20
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ruta-service
+  namespace: red-de-rutas
+spec:
+  selector:
+    app: ruta-service
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082

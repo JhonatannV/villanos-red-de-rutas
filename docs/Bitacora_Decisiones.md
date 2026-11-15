@@ -192,6 +192,17 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 | Qué se pierde | Se reserva un pequeño cupo constante de descriptores de archivo y memoria para el pool de conexiones en el proceso del API Gateway. |
 | Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-36). |
 
+### D-16
+**Orquestación Dual basada en Docker Compose v2 y Manifiestos Declarativos de Kubernetes (`k8s/`) con Asignación Explícita de Límites de CPU y Memoria (`deploy.resources.limits`)**, resolviendo la decisión abierta sobre el orquestador (A-RQ-03 / DEPLOY-01).
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Contenedores ejecutados individualmente con scripts shell `docker run` sin orquestador. (b) Despliegue sin límites de recursos explícitos dejando que la JVM compita por la memoria global del host. |
+| Por qué se descartaron | Sin orquestación declarativa, el orden de inicialización no es determinista y los microservicios fallan al arrancar si Keycloak no está saludable. Sin límites de CPU/RAM, un contenedor con fuga o bajo estrés puede degradar todo el nodo (*noisy neighbor problem*), violando los criterios de aislamiento. |
+| Requisito de calidad | **A-RQ-03 y DEPLOY-01 Facilidad de Despliegue y Disponibilidad**: Se provee un comando único `docker compose up -d` para entornos locales y `kubectl apply -k k8s/` con Kustomize para clústeres. Cada uno de los 5 contenedores tiene definidos sus límites máximos (total ecosistema: 5.5 CPUs y 2.75 GB RAM) y reservas mínimas (1.35 CPUs y 1.31 GB RAM), garantizando un despliegue predecible y seguro. |
+| Qué se pierde | Se requiere mantener sincronizada la definición de puertos y variables de entorno entre `docker-compose.yml` y los manifiestos YAML de Kubernetes. |
+| Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-38). |
+
 ---
 
 ## Decisiones abiertas
