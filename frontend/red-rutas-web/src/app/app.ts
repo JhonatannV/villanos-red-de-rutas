@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { RedGestorComponent } from './features/red-gestor/red-gestor.component';
+import { GrafoVisorComponent } from './features/grafo-visor/grafo-visor.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RedGestorComponent],
+  imports: [CommonModule, RouterOutlet, RedGestorComponent, GrafoVisorComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
