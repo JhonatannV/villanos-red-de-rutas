@@ -1,0 +1,48 @@
+<header class="app-header">
+  <div class="header-brand">
+    <div class="logo-icon">&#x1F686;</div>
+    <div>
+      <h1 class="app-title">Red de Rutas</h1>
+      <span class="app-subtitle">Sistema de Transporte · Equipo Villanos (UCEVA)</span>
+    </div>
+  </div>
+
+  <div class="auth-section">
+    @if (authService.isAuthenticated()) {
+      <div class="user-card">
+        <div class="user-info">
+          <span class="user-name">&#x1F464; {{ authService.username() }}</span>
+          <span class="user-sub" title="Identificador OpenID Connect 'sub'">sub: {{ authService.userSub() | slice:0:13 }}...</span>
+        </div>
+        <div class="roles-container">
+          @for (role of authService.userRoles(); track role) {
+            @if (role === 'admin' || role === 'planificador' || role === 'consultor') {
+              <span class="role-badge" [class]="'role-' + role">{{ role }}</span>
+            }
+          }
+        </div>
+        <button class="btn btn-outline" (click)="logout()">Cerrar Sesi&oacute;n</button>
+      </div>
+    } @else {
+      <div class="guest-card">
+        <span class="guest-label">Modo Invitado (Sin sesi&oacute;n)</span>
+        <button class="btn btn-primary" (click)="login()">Iniciar Sesi&oacute;n (Keycloak PKCE)</button>
+      </div>
+    }
+  </div>
+</header>
+
+<main class="app-container">
+  <section class="security-banner">
+    <div class="banner-icon">&#x1F512;</div>
+    <div class="banner-text">
+      <strong>Autenticaci&oacute;n Centralizada OAuth 2.0 / OIDC con PKCE (S256)</strong>
+      <p>
+        Protegido mediante Keycloak (<em>rutas-realm</em>, cliente p&uacute;blico <em>red-rutas-frontend</em>).
+        Las contrase&ntilde;as nunca residen ni se gestionan en el frontend.
+      </p>
+    </div>
+  </section>
+
+  <router-outlet></router-outlet>
+</main>
