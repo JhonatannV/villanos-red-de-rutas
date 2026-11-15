@@ -206,14 +206,14 @@
   <div class="card table-card">
     <div class="card-header flex-header">
       <div class="tabs">
-        <button class="tab-btn" [class.active]="tabActiva() === 'paradas'" (click)="tabActiva.set('paradas')">
+        <button class="tab-btn" [class.active]="tabActiva() === 'paradas'" (click)="cambiarTab('paradas')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
           Paradas ({{ redService.totalParadas() }})
         </button>
-        <button class="tab-btn" [class.active]="tabActiva() === 'tramos'" (click)="tabActiva.set('tramos')">
+        <button class="tab-btn" [class.active]="tabActiva() === 'tramos'" (click)="cambiarTab('tramos')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
             <circle cx="6" cy="6" r="3"></circle>
             <circle cx="18" cy="18" r="3"></circle>
@@ -230,88 +230,96 @@
           </svg>
           Recargar Servidor
         </button>
+        <button class="btn btn-toggle-table" (click)="toggleTabla()" title="Expandir o contraer listado">
+          <span>{{ tablaExpandida() ? 'Ocultar Listado' : 'Mostrar Listado' }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron-icon" [class.rotated]="tablaExpandida()">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div class="card-body">
-      @if (tabActiva() === 'paradas') {
-        <div class="filter-bar">
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" class="form-control search-input" placeholder="Filtrar por nombre o ID de estación..."
-                   [ngModel]="filtroParada()" (ngModelChange)="filtroParada.set($event)">
+    @if (tablaExpandida()) {
+      <div class="card-body collapsible-body">
+        @if (tabActiva() === 'paradas') {
+          <div class="filter-bar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" class="form-control search-input" placeholder="Filtrar por nombre o ID de estación..."
+                     [ngModel]="filtroParada()" (ngModelChange)="filtroParada.set($event)">
+            </div>
           </div>
-        </div>
 
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre de la Parada</th>
-                <th>Coordenada X</th>
-                <th>Coordenada Y</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (parada of paradasFiltradas(); track parada.id) {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
                 <tr>
-                  <td><span class="id-badge">{{ parada.id }}</span></td>
-                  <td class="font-bold text-highlight">{{ parada.nombre }}</td>
-                  <td class="font-mono">{{ parada.x }}</td>
-                  <td class="font-mono">{{ parada.y }}</td>
+                  <th>ID</th>
+                  <th>Nombre de la Parada</th>
+                  <th>Coordenada X</th>
+                  <th>Coordenada Y</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Peso</th>
-                <th>Estado Vial</th>
-                <th>Acción de Contingencia</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (tramo of redService.tramos(); track tramo.id) {
-                <tr [class.row-closed]="!tramo.abierto">
-                  <td><span class="id-badge">{{ tramo.id }}</span></td>
-                  <td>{{ getParadaNombre(tramo.origen) }}</td>
-                  <td>{{ getParadaNombre(tramo.destino) }}</td>
-                  <td><span class="weight-tag">{{ tramo.peso }} min</span></td>
-                  <td>
-                    @if (tramo.abierto) {
-                      <span class="status-badge status-open">
-                        <span class="dot dot-open"></span> Abierto
-                      </span>
-                    } @else {
-                      <span class="status-badge status-closed">
-                        <span class="dot dot-closed"></span> En Mantenimiento
-                      </span>
-                    }
-                  </td>
-                  <td>
-                    <button class="btn btn-sm" [class.btn-danger]="tramo.abierto" [class.btn-success]="!tramo.abierto"
-                            (click)="toggleEstadoTramo(tramo.id, tramo.abierto)"
-                            [disabled]="!authService.isPlanificador()">
-                      {{ tramo.abierto ? 'Cerrar Tramo' : 'Reabrir Vía' }}
-                    </button>
-                  </td>
+              </thead>
+              <tbody>
+                @for (parada of paradasFiltradas(); track parada.id) {
+                  <tr>
+                    <td><span class="id-badge">{{ parada.id }}</span></td>
+                    <td class="font-bold text-highlight">{{ parada.nombre }}</td>
+                    <td class="font-mono">{{ parada.x }}</td>
+                    <td class="font-mono">{{ parada.y }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
+                  <th>Peso</th>
+                  <th>Estado Vial</th>
+                  <th>Acción de Contingencia</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
+              </thead>
+              <tbody>
+                @for (tramo of redService.tramos(); track tramo.id) {
+                  <tr [class.row-closed]="!tramo.abierto">
+                    <td><span class="id-badge">{{ tramo.id }}</span></td>
+                    <td>{{ getParadaNombre(tramo.origen) }}</td>
+                    <td>{{ getParadaNombre(tramo.destino) }}</td>
+                    <td><span class="weight-tag">{{ tramo.peso }} min</span></td>
+                    <td>
+                      @if (tramo.abierto) {
+                        <span class="status-badge status-open">
+                          <span class="dot dot-open"></span> Abierto
+                        </span>
+                      } @else {
+                        <span class="status-badge status-closed">
+                          <span class="dot dot-closed"></span> En Mantenimiento
+                        </span>
+                      }
+                    </td>
+                    <td>
+                      <button class="btn btn-sm" [class.btn-danger]="tramo.abierto" [class.btn-success]="!tramo.abierto"
+                              (click)="toggleEstadoTramo(tramo.id, tramo.abierto)"
+                              [disabled]="!authService.isPlanificador()">
+                        {{ tramo.abierto ? 'Cerrar Tramo' : 'Reabrir Vía' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>

@@ -59,4 +59,26 @@ describe('RedGestorComponent', () => {
 
     expect(authService.isPlanificador()).toBe(false);
   });
+
+  it('debe iniciar con el listado colapsado y permitir expandirlo o contraerlo', () => {
+    fixture.detectChanges();
+    const req = httpTestingController.expectOne(req => req.url.includes('/api/redes/1'));
+    req.flush({ redId: 1, nombre: 'Red', paradas: [], tramos: [] });
+
+    // Inicia minimizado por defecto
+    expect(component.tablaExpandida()).toBe(false);
+
+    // Expandir
+    component.toggleTabla();
+    expect(component.tablaExpandida()).toBe(true);
+
+    // Contraer
+    component.toggleTabla();
+    expect(component.tablaExpandida()).toBe(false);
+
+    // Al cambiar de tab se debe expandir
+    component.cambiarTab('tramos');
+    expect(component.tabActiva()).toBe('tramos');
+    expect(component.tablaExpandida()).toBe(true);
+  });
 });

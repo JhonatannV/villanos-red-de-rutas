@@ -25,9 +25,19 @@ export class RedGestorComponent implements OnInit {
   nuevoTramoDestino = signal<number>(1);
   nuevoTramoPeso = signal<number>(10);
 
-  // Filtros
+  // Filtros y estado colapsable (Accordion)
   filtroParada = signal<string>('');
   tabActiva = signal<'paradas' | 'tramos'>('paradas');
+  tablaExpandida = signal<boolean>(false);
+
+  toggleTabla(): void {
+    this.tablaExpandida.update(v => !v);
+  }
+
+  cambiarTab(tab: 'paradas' | 'tramos'): void {
+    this.tabActiva.set(tab);
+    this.tablaExpandida.set(true); // Al hacer clic en una pestaña, expandir automáticamente
+  }
 
   ngOnInit(): void {
     this.redService.cargarRed(1).subscribe({
