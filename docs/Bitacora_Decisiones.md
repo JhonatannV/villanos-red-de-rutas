@@ -22,7 +22,11 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-10](#d-10) | BFS, DFS, conectividad y ciclos se implementan en Java | Tomada |
 | [D-11](#d-11) | Los endpoints de algoritmos cuelgan de `/api/rutas` | Tomada |
 | [D-12](#d-12) | La red se representa como lista de adyacencia, no como matriz | Tomada y medida |
-| — | Abiertas: origen de la traza, carga del `.so`, caché de la red, Swarm o Kubernetes | [Ver al final](#decisiones-abiertas) |
+| [D-13](#d-13) | Visualizador SVG declarativo con Signals y dispersión anticolisión | Tomada y medida |
+| [D-14](#d-14) | Spatial Hash Grid O(M) para renderizado de red masiva (400x1100) | Tomada y medida |
+| [D-15](#d-15) | Connection Pooling en API Gateway para latencia p95 < 400 ms | Tomada y medida |
+| [D-16](#d-16) | Orquestación dual Docker Compose v2 y Kubernetes con límites de CPU/RAM | Tomada y verificada |
+| — | Consolidación y cierre de decisiones abiertas iniciales | [Consolidadas al 100 %](#cierre-de-decisiones-abiertas) |
 
 ---
 
@@ -205,14 +209,14 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 
 ---
 
-## Decisiones abiertas
+## Cierre de decisiones abiertas
 
-Se registran aquí para no perderlas. Cada una pasa a una entrada D-xx cuando se tome.
+Todas las inquietudes y alternativas arquitectónicas iniciales han sido resueltas, implementadas y validadas formalmente a lo largo de los 5 Sprints:
 
-| Tema | Opciones | Requisito que la decide | Tarea |
+| Tema | Decisión tomada | Justificación y evidencia | Decisión / Tarea |
 |---|---|---|---|
-| **De dónde sale la traza paso a paso** (RF-04) | (a) La calcula Java aunque el camino lo dé C. (b) Una segunda función en C que llene también la traza. | W-RQ-03: pedir la traza no puede duplicar el tiempo. A-RQ-01. | SCRUM-14/15 |
-| **Cómo se carga `libgrafo.so` en el contenedor** | `jna.library.path` (ya usado en pruebas, SCRUM-15), `LD_LIBRARY_PATH` o `Native.load` con ruta absoluta | A-RQ-03 Facilidad de despliegue | SCRUM-16 |
-| **Red en caché o pedida en cada consulta** | Pedirla a `grafo-service` siempre, o guardarla en `ruta-service` e invalidarla cuando cambie | W-RQ-03 Desempeño contra correctitud | SCRUM-14 |
-| **Orquestador** | Docker Swarm o Kubernetes | A-RQ-03 | SCRUM-38 |
-| **Dónde se valida la autorización** | Solo en el gateway, o en cada servicio | Seguridad | SCRUM-20/21 |
+| **De dónde sale la traza paso a paso** (RF-04) | **Calculada en Java (`DijkstraJava`)** | Medido en W-RQ-03: generar la traza en Java toma apenas **5.30 ms** frente a **4.95 ms** de solo ruta (ratio **1.07x**, muy inferior al límite de 2.0x). No justifica duplicar lógica compleja de traza en C. | D-10 · SCRUM-36 |
+| **Cómo se carga `libgrafo.so` en el contenedor** | **`jna.library.path=/native` y `/usr/lib`** | En Dockerfile multi-stage, `libgrafo.so` se compila con GCC y se copia a `/native/libgrafo.so` y a la ruta estándar `/usr/lib/`. `LibGrafo` lo carga transparentemente sin rutas absolutas fijas. | SCRUM-15 · SCRUM-16 |
+| **Red en caché o pedida en cada consulta** | **Pedida a `grafo-service` con Connection Pooling** | Se eliminó el riesgo de datos obsoletos solicitando la topología fresca en cada cálculo. La latencia se mitigó mediante el pool persistente HTTP (`PoolingHttpClientConnectionManager`), logrando p95 de **77.14 ms** ($< 400\text{ ms}$). | D-01 · D-15 · SCRUM-36 |
+| **Orquestador del sistema** | **Docker Compose v2 y Kubernetes (`k8s/`)** | Se provee soporte dual: `docker compose up -d` para evaluación local y manifiestos declarativos con Kustomize (`kubectl apply -k k8s/`) con cuotas estrictas de CPU y RAM. | D-16 · SCRUM-38 |
+| **Dónde se valida la autorización** | **En Gateway y microservicios downstream** | El Gateway valida la existencia y firma del Bearer JWT en el perímetro. Los microservicios downstream validan localmente la firma del token, extraen el claim `sub` para auditoría y verifican roles específicos (`planificador` / `consultor`). | SCRUM-20 · SCRUM-21 · SCRUM-22 |
