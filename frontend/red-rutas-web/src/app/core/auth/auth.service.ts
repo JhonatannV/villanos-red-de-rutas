@@ -88,7 +88,7 @@ export class AuthService {
   async login(): Promise<void> {
     if (this.keycloakInstance) {
       await this.keycloakInstance.login({
-        redirectUri: window.location.origin
+        redirectUri: window.location.origin + '/'
       });
     }
   }
@@ -99,7 +99,7 @@ export class AuthService {
   async logout(): Promise<void> {
     if (this.keycloakInstance) {
       await this.keycloakInstance.logout({
-        redirectUri: window.location.origin
+        redirectUri: window.location.origin + '/'
       });
       this.isAuthenticated.set(false);
       this.currentUser.set(null);
@@ -112,22 +112,26 @@ export class AuthService {
    * Obtiene el token de acceso vigente, refrescandolo transparentemente si va a expirar en menos de 30s
    */
   async getToken(): Promise<string | null> {
-    if (!this.keycloakInstance || !this.isAuthenticated()) {
-      return null;
+    if (!this.keycloakInstance) {
+      return this.token();
     }
 
-    try {
-      // Refresca si expira dentro de 30 segundos
-      const refreshed = await this.keycloakInstance.updateToken(30);
-      if (refreshed) {
-        this.procesarToken();
+    if (this.keycloakInstance.token) {
+      try {
+        if (this.keycloakInstance.isTokenExpired(30)) {
+          const refreshed = await this.keycloakInstance.updateToken(30);
+          if (refreshed) {
+            this.procesarToken();
+          }
+        }
+        return this.keycloakInstance.token;
+      } catch (error) {
+        console.warn('Advertencia refrescando token, usando token existente:', error);
+        return this.keycloakInstance.token;
       }
-      return this.keycloakInstance.token ?? null;
-    } catch (error) {
-      console.error('Error refrescando token:', error);
-      this.isAuthenticated.set(false);
-      return null;
     }
+
+    return this.token();
   }
 
   /**

@@ -62,7 +62,7 @@ export class RedGestorComponent implements OnInit {
       nombre,
       x: Number(this.nuevaParadaX()),
       y: Number(this.nuevaParadaY())
-    }).subscribe({
+    }, this.redSeleccionada()).subscribe({
       next: () => {
         this.nuevaParadaNombre.set('');
       }
@@ -74,7 +74,7 @@ export class RedGestorComponent implements OnInit {
     const destino = Number(this.nuevoTramoDestino());
     const peso = Number(this.nuevoTramoPeso());
 
-    this.redService.crearTramo(origen, destino, peso).subscribe({
+    this.redService.crearTramo(origen, destino, peso, this.redSeleccionada()).subscribe({
       next: () => {
         this.nuevoTramoPeso.set(10);
       }
@@ -86,7 +86,7 @@ export class RedGestorComponent implements OnInit {
       this.redService.mensajeError.set('Error 403: Se requiere rol planificador o admin para cambiar el estado de tramos.');
       return;
     }
-    this.redService.cambiarEstadoTramo(tramoId, !estadoActual).subscribe();
+    this.redService.cambiarEstadoTramo(tramoId, !estadoActual, this.redSeleccionada()).subscribe();
   }
 
   readonly redSeleccionada = signal<number>(1);

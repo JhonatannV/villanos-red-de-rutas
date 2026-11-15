@@ -98,9 +98,18 @@ export class RedService {
       }),
       catchError(err => {
         this.cargando.set(false);
-        const mensaje = err?.status === 403 
-          ? 'Error 403 Forbidden: Su rol actual no tiene permisos para crear paradas (requiere rol planificador o admin).'
-          : 'Error al persistir la parada en el servidor.';
+        let mensaje = 'Error al persistir la parada en el servidor.';
+        if (err?.status === 401) {
+          mensaje = 'Error 401 Unauthorized: No hay sesión activa o el token expiró. Por favor inicie sesión como planificador.';
+        } else if (err?.status === 403) {
+          mensaje = 'Error 403 Forbidden: Su rol actual no tiene permisos para crear paradas (requiere rol planificador o admin).';
+        } else if (err?.status === 0) {
+          mensaje = 'Error de conexión: No se pudo contactar con el API Gateway en http://localhost:8080.';
+        } else if (err?.error?.mensaje) {
+          mensaje = `Error del servidor: ${err.error.mensaje}`;
+        } else if (err?.status) {
+          mensaje = `Error ${err.status} al persistir la parada en el servidor.`;
+        }
         this.mensajeError.set(mensaje);
         return throwError(() => err);
       })
@@ -144,9 +153,18 @@ export class RedService {
       }),
       catchError(err => {
         this.cargando.set(false);
-        const mensaje = err?.status === 403 
-          ? 'Error 403 Forbidden: Su rol actual no tiene permisos para crear tramos (requiere rol planificador o admin).'
-          : 'Error al persistir el tramo en el servidor.';
+        let mensaje = 'Error al persistir el tramo en el servidor.';
+        if (err?.status === 401) {
+          mensaje = 'Error 401 Unauthorized: No hay sesión activa o el token expiró. Por favor inicie sesión como planificador.';
+        } else if (err?.status === 403) {
+          mensaje = 'Error 403 Forbidden: Su rol actual no tiene permisos para crear tramos (requiere rol planificador o admin).';
+        } else if (err?.status === 0) {
+          mensaje = 'Error de conexión: No se pudo contactar con el API Gateway en http://localhost:8080.';
+        } else if (err?.error?.mensaje) {
+          mensaje = `Error del servidor: ${err.error.mensaje}`;
+        } else if (err?.status) {
+          mensaje = `Error ${err.status} al persistir el tramo en el servidor.`;
+        }
         this.mensajeError.set(mensaje);
         return throwError(() => err);
       })
@@ -170,9 +188,20 @@ export class RedService {
       }),
       catchError(err => {
         this.cargando.set(false);
-        const mensaje = err?.status === 403 
-          ? 'Error 403 Forbidden: No tiene permisos para modificar tramos.'
-          : 'Error al actualizar el estado del tramo.';
+        let mensaje = 'Error al actualizar el estado del tramo.';
+        if (err?.status === 401) {
+          mensaje = 'Error 401 Unauthorized: No hay sesión activa o el token expiró. Por favor inicie sesión como planificador.';
+        } else if (err?.status === 403) {
+          mensaje = 'Error 403 Forbidden: No tiene permisos para modificar tramos (requiere rol planificador o admin).';
+        } else if (err?.status === 404) {
+          mensaje = `Error 404 Not Found: El tramo con ID ${tramoId} no existe en la red ${redId}.`;
+        } else if (err?.status === 0) {
+          mensaje = 'Error de conexión: No se pudo contactar con el API Gateway en http://localhost:8080.';
+        } else if (err?.error?.mensaje) {
+          mensaje = `Error del servidor: ${err.error.mensaje}`;
+        } else if (err?.status) {
+          mensaje = `Error ${err.status} al actualizar el estado del tramo.`;
+        }
         this.mensajeError.set(mensaje);
         return throwError(() => err);
       })

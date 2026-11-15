@@ -29,8 +29,8 @@ services:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
       interval: 10s
       timeout: 5s
-      retries: 6
-      start_period: 30s
+      retries: 10
+      start_period: 60s
     restart: unless-stopped
 
   grafo-service:
@@ -159,7 +159,7 @@ services:
           cpus: '0.1'
           memory: 64M
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:80 || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:80 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
