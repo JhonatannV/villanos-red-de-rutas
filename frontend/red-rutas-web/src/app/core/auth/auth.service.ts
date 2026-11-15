@@ -42,15 +42,24 @@ export class AuthService {
 
     try {
       if (!this.keycloakInstance) {
+        this.isInitialized.set(true);
         return false;
       }
 
-      const authenticated = await this.keycloakInstance.init({
+      // Timeout de seguridad: si Keycloak no responde en 1.5s (servidor offline),
+      // continuar en modo degradado/invitado sin bloquear el inicio de la app.
+      const timeoutPromise = new Promise<boolean>((_, reject) =>
+        setTimeout(() => reject(new Error('Keycloak no disponible (timeout)')), 1500)
+      );
+
+      const initPromise = this.keycloakInstance.init({
         onLoad: 'check-sso',
         pkceMethod: 'S256',
         checkLoginIframe: false,
         silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html'
       });
+
+      const authenticated = await Promise.race([initPromise, timeoutPromise]);
 
       this.isAuthenticated.set(authenticated);
       this.isInitialized.set(true);

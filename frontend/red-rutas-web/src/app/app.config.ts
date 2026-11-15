@@ -7,7 +7,10 @@ import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth.interceptor';
 
 function initializeAuth(authService: AuthService) {
-  return () => authService.init();
+  return () => authService.init().catch(err => {
+    console.warn('Fallo en inicialización de auth:', err);
+    return false;
+  });
 }
 
 export const appConfig: ApplicationConfig = {

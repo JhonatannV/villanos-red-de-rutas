@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Parada, Tramo, RedGrafo } from '../models/red.model';
+import { RED_DEFAULT_40 } from '../models/red-default.data';
 
 @Injectable({
   providedIn: 'root'
@@ -47,10 +48,12 @@ export class RedService {
           this.aplicarRed(respaldo);
           this.mensajeExito.set('Red cargada desde persistencia local segura.');
         } else {
-          this.mensajeError.set('No fue posible cargar la red del backend ni del respaldo local.');
+          this.aplicarRed(RED_DEFAULT_40);
+          this.guardarEnAlmacenamientoLocal(RED_DEFAULT_40);
+          this.mensajeExito.set('Red cargada con dataset predeterminado (40 paradas, 90 tramos).');
         }
         this.cargando.set(false);
-        return throwError(() => err);
+        return of(this.redActual()!);
       })
     );
   }
