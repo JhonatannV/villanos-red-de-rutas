@@ -1,1 +1,70 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global Design System - Red de Rutas (Equipo Villanos - UCEVA) */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Deep Cyber-Slate Theme */
+  --bg-app: #080d1a;
+  --bg-surface: #0e1726;
+  --bg-card: #131e33;
+  --bg-card-hover: #182642;
+  --bg-glass: rgba(19, 30, 51, 0.75);
+
+  /* Modern Refined Gradients & Accents (No generic blues) */
+  --brand-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
+  --brand-cyan: #06b6d4;
+  --brand-indigo: #6366f1;
+  --brand-sky: #38bdf8;
+  --brand-glow: rgba(6, 182, 212, 0.25);
+
+  /* Status Accents */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #f43f5e;
+  --status-info: #0ea5e9;
+
+  /* Text & Borders */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(56, 189, 248, 0.25);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom Modern Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090e1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

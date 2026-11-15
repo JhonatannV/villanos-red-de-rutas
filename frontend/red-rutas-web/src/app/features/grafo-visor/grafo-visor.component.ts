@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RedService } from '../../core/services/red.service';
 import { Parada, Tramo } from '../../core/models/red.model';
@@ -9,8 +9,11 @@ export interface EtiquetaPeso {
   y: number;
   peso: number;
   abierto: boolean;
-  origen: number;
-  destino: number;
+}
+
+export interface VecinoConexion {
+  parada: Parada;
+  tramo: Tramo;
 }
 
 @Component({
@@ -32,6 +35,10 @@ export class GrafoVisorComponent {
   readonly panX = signal<number>(0);
   readonly panY = signal<number>(0);
   readonly paradaSeleccionada = signal<Parada | null>(null);
+
+  // Estados interactivos para origen / destino de rutas
+  readonly paradaOrigen = signal<Parada | null>(null);
+  readonly paradaDestino = signal<Parada | null>(null);
 
   // Estado de arrastre manual (mouse drag)
   private isDragging = false;
@@ -74,70 +81,70 @@ export class GrafoVisorComponent {
       const dy = p2.y - p1.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Fracción a lo largo de la arista (alternando entre 0.38 y 0.62)
+      // Fracción a lo largo de la arista (alternando entre 0.42 y 0.58)
       const fraction = (t.id % 2 === 0) ? 0.42 : 0.58;
       const baseX = p1.x + dx * fraction;
       const baseY = p1.y + dy * fraction;
 
-      // Vector perpendicular normalizado
-      const perpX = dist > 0 ? -dy / dist : 0;
-      const perpY = dist > 0 ? dx / dist : 0;
+      let perpX = 0;
+      let perpY = 0;
+      let dirX = 0;
+      let dirY = 0;
 
-      // Desplazamiento lateral alternado
-      const offset = (t.id % 3 === 0) ? 10 : (t.id % 3 === 1 ? -10 : 8);
+      if (dist > 0.0001) {
+        dirX = dx / dist;
+        dirY = dy / dist;
+        // Vector perpendicular normalizado (-dy, dx)
+        perpX = -dy / dist;
+        perpY = dx / dist;
+      }
 
-      let posX = baseX + perpX * offset;
-      let posY = baseY + perpY * offset;
+      // Desplazamiento inicial perpendicular
+      const offsetPerp = (t.id % 2 === 0) ? 10 : -10;
+      let finalX = baseX + perpX * offsetPerp;
+      let finalY = baseY + perpY * offsetPerp;
 
-      // Detección y corrección iterativa de colisiones con etiquetas anteriores
-      let colision = true;
-      let intentos = 0;
-      while (colision && intentos < 8) {
-        colision = false;
-        intentos++;
-        for (const previa of etiquetas) {
-          const dX = posX - previa.x;
-          const dY = posY - previa.y;
-          const d = Math.sqrt(dX * dX + dY * dY);
+      // Desplazamiento adicional para tramos con extremos adyacentes o paralelos
+      const offsetAlong = ((t.id * 7) % 15) - 7;
+      finalX += dirX * offsetAlong;
+      finalY += dirY * offsetAlong;
 
-          if (d < 16) {
-            colision = true;
-            const dirX = dist > 0 ? dx / dist : 1;
-            const dirY = dist > 0 ? dy / dist : 0;
-            posX += dirX * 14 - perpX * 10;
-            posY += dirY * 14 - perpY * 10;
-            break;
-          }
+      // Resolución iterativa de proximidad si colisiona con alguna ya calculada
+      for (let j = 0; j < etiquetas.length; j++) {
+        const exist = etiquetas[j];
+        const diffX = finalX - exist.x;
+        const diffY = finalY - exist.y;
+        const distSq = diffX * diffX + diffY * diffY;
+        const minDist = 16;
+
+        if (distSq < minDist * minDist) {
+          // Desplazar a lo largo de la arista y perpendicularmente para evitar el solapamiento
+          finalX += dirX * 14 + perpX * 10;
+          finalY += dirY * 14 + perpY * 10;
         }
       }
 
       etiquetas.push({
         tramoId: t.id,
-        x: Math.round(posX * 10) / 10,
-        y: Math.round(posY * 10) / 10,
+        x: Math.round(finalX * 10) / 10,
+        y: Math.round(finalY * 10) / 10,
         peso: t.peso,
-        abierto: t.abierto,
-        origen: t.origen,
-        destino: t.destino
+        abierto: t.abierto
       });
     }
 
     return etiquetas;
   });
 
-  // Métodos de Zoom
+  // Métodos de control de Zoom
   zoomIn(): void {
-    const actual = this.zoom();
-    if (actual < 2.5) {
-      this.zoom.set(Math.round((actual + 0.2) * 10) / 10);
-    }
+    const nuevo = Math.min(4.0, Math.round((this.zoom() + 0.2) * 10) / 10);
+    this.zoom.set(nuevo);
   }
 
   zoomOut(): void {
-    const actual = this.zoom();
-    if (actual > 0.6) {
-      this.zoom.set(Math.round((actual - 0.2) * 10) / 10);
-    }
+    const nuevo = Math.max(0.3, Math.round((this.zoom() - 0.2) * 10) / 10);
+    this.zoom.set(nuevo);
   }
 
   resetVista(): void {
@@ -190,10 +197,55 @@ export class GrafoVisorComponent {
     }
   }
 
+  marcarComoOrigen(parada: Parada): void {
+    this.paradaOrigen.set(parada);
+    if (this.paradaDestino()?.id === parada.id) {
+      this.paradaDestino.set(null);
+    }
+  }
+
+  marcarComoDestino(parada: Parada): void {
+    this.paradaDestino.set(parada);
+    if (this.paradaOrigen()?.id === parada.id) {
+      this.paradaOrigen.set(null);
+    }
+  }
+
+  limpiarSeleccionRuta(): void {
+    this.paradaOrigen.set(null);
+    this.paradaDestino.set(null);
+  }
+
+  getVecinos(paradaId: number): VecinoConexion[] {
+    const tramos = this.redService.tramos();
+    const paradas = this.redService.paradas();
+    const mapa = new Map<number, Parada>();
+    paradas.forEach(p => mapa.set(p.id, p));
+
+    const vecinos: VecinoConexion[] = [];
+
+    for (const t of tramos) {
+      if (t.origen === paradaId) {
+        const dest = mapa.get(t.destino);
+        if (dest) vecinos.push({ parada: dest, tramo: t });
+      }
+    }
+
+    return vecinos;
+  }
+
   esTramoConectado(tramo: Tramo): boolean {
     const sel = this.paradaSeleccionada();
-    if (!sel) return false;
-    return tramo.origen === sel.id || tramo.destino === sel.id;
+    const orig = this.paradaOrigen();
+    const dest = this.paradaDestino();
+
+    if (sel && (tramo.origen === sel.id || tramo.destino === sel.id)) {
+      return true;
+    }
+    if (orig && dest && ((tramo.origen === orig.id && tramo.destino === dest.id) || (tramo.origen === dest.id && tramo.destino === orig.id))) {
+      return true;
+    }
+    return false;
   }
 
   getCoordenadaParada(id: number): { x: number; y: number } {
