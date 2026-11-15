@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { GrafoVisorComponent } from './grafo-visor.component';
 import { RedService } from '../../core/services/red.service';
 import { RedGrafo, Parada, Tramo } from '../../core/models/red.model';
+import { RED_GRANDE_400 } from '../../core/models/red-400.data';
 
 describe('GrafoVisorComponent (Criterio de Aceptacion RF-02 Visualizador)', () => {
   let fixture: ComponentFixture<GrafoVisorComponent>;
@@ -242,5 +243,124 @@ describe('GrafoVisorComponent (Criterio de Aceptacion RF-02 Visualizador)', () =
     }
 
     expect(colisiones).toBe(0);
+  });
+
+  describe('SCRUM-35 [W-RQ-02]: Desempeno al renderizar red grande (400 paradas, 1.100 tramos)', () => {
+    it('debe renderizar la red grande completa (400 paradas, 1.100 tramos) en menos de 2 segundos', () => {
+      const inicio = performance.now();
+
+      // Cargar dataset masivo en el estado reactivo del servicio
+      redService.paradas.set(RED_GRANDE_400.paradas);
+      redService.tramos.set(RED_GRANDE_400.tramos);
+
+      // Disparar ciclo completo de deteccion de cambios y renderizado SVG
+      fixture.detectChanges();
+
+      const fin = performance.now();
+      const duracionMs = fin - inicio;
+
+      console.log(`[W-RQ-02 Benchmark] Tiempo de dibujo inicial red 400x1100: ${duracionMs.toFixed(2)} ms (limite: 2000 ms)`);
+
+      // Criterio 1 W-RQ-02: Dibujo inicial < 2 s (2.000 ms)
+      expect(duracionMs).toBeLessThan(2000);
+
+      // Verificacion de integridad de elementos SVG generados en el DOM
+      const circulosParadas = fixture.nativeElement.querySelectorAll('.node-circle');
+      const lineasTramos = fixture.nativeElement.querySelectorAll('.tramo-line');
+      const etiquetasGeneradas = component.etiquetasPeso();
+
+      expect(circulosParadas.length).toBe(400);
+      expect(lineasTramos.length).toBe(1100);
+      expect(etiquetasGeneradas.length).toBe(1100);
+    });
+
+    it('debe garantizar crecimiento lineal O(M) en el calculo de tramos y etiquetas', () => {
+      // 1. Medicion con red base (90 tramos)
+      redService.paradas.set(mockParadas40);
+      redService.tramos.set(mockTramos90);
+
+      const iteraciones = 10;
+      let tiempoTotal90 = 0;
+      for (let i = 0; i < iteraciones; i++) {
+        const t0 = performance.now();
+        const etiq = component.etiquetasPeso();
+        const t1 = performance.now();
+        expect(etiq.length).toBe(90);
+        tiempoTotal90 += (t1 - t0);
+      }
+      const promedio90 = tiempoTotal90 / iteraciones;
+
+      // 2. Medicion con red grande (1.100 tramos)
+      redService.paradas.set(RED_GRANDE_400.paradas);
+      redService.tramos.set(RED_GRANDE_400.tramos);
+
+      let tiempoTotal1100 = 0;
+      for (let i = 0; i < iteraciones; i++) {
+        const t0 = performance.now();
+        const etiq = component.etiquetasPeso();
+        const t1 = performance.now();
+        expect(etiq.length).toBe(1100);
+        tiempoTotal1100 += (t1 - t0);
+      }
+      const promedio1100 = tiempoTotal1100 / iteraciones;
+
+      console.log(`[W-RQ-02 Benchmark] Calculo 90 tramos: ${promedio90.toFixed(3)} ms, 1.100 tramos: ${promedio1100.toFixed(3)} ms`);
+
+      // Criterio 2 W-RQ-02: Complejidad lineal O(M) mediante Spatial Hash Grid
+      // El incremento en tramos es 1100 / 90 = 12.2x. Con O(M), el tiempo se escala linealmente (< 35x),
+      // a diferencia de O(M^2) que escalaria cuadraticamente (~150x).
+      const factorCrecimiento = promedio90 > 0 ? (promedio1100 / promedio90) : 1;
+      expect(factorCrecimiento).toBeLessThan(35);
+    });
+
+    it('debe asegurar que ninguna tarea sincrona del hilo principal exceda 100 ms tras el dibujo inicial', () => {
+      // Criterio 3 W-RQ-02: Ninguna tarea del hilo principal > 100 ms
+      // Renderizar estado inicial de la red grande
+      redService.paradas.set(RED_GRANDE_400.paradas);
+      redService.tramos.set(RED_GRANDE_400.tramos);
+      fixture.detectChanges();
+
+      const tareasMs: number[] = [];
+
+      // 1. Tarea de seleccion de nodo e identificacion de tramos conectados
+      const t0Seleccion = performance.now();
+      component.seleccionarParada(RED_GRANDE_400.paradas[200]);
+      fixture.detectChanges();
+      const t1Seleccion = performance.now();
+      tareasMs.push(t1Seleccion - t0Seleccion);
+
+      // 2. Tarea de navegacion reactiva (Zoom)
+      const t0Zoom = performance.now();
+      component.zoomIn();
+      fixture.detectChanges();
+      const t1Zoom = performance.now();
+      tareasMs.push(t1Zoom - t0Zoom);
+
+      // 3. Tarea de navegacion reactiva (Paneo con raton)
+      const t0Pan = performance.now();
+      component.onMouseDown({ button: 0, clientX: 200, clientY: 200 } as MouseEvent);
+      component.onMouseMove({ clientX: 180, clientY: 190 } as MouseEvent);
+      component.onMouseUp();
+      fixture.detectChanges();
+      const t1Pan = performance.now();
+      tareasMs.push(t1Pan - t0Pan);
+
+      // 4. Tarea de actualizacion de estado de contingencia vial (abrir/cerrar tramo)
+      const t0Contingencia = performance.now();
+      const tramosModificados = [...RED_GRANDE_400.tramos];
+      tramosModificados[0] = { ...tramosModificados[0], abierto: false };
+      redService.tramos.set(tramosModificados);
+      fixture.detectChanges();
+      const t1Contingencia = performance.now();
+      tareasMs.push(t1Contingencia - t0Contingencia);
+
+      const maxTarea = Math.max(...tareasMs);
+      console.log(`[W-RQ-02 Benchmark] Maxima duracion de tarea hilo principal: ${maxTarea.toFixed(2)} ms (limite: 100 ms)`);
+
+      // Todas las tareas de interaccion y actualizacion deben ser < 100 ms
+      for (const t of tareasMs) {
+        expect(t).toBeLessThan(100);
+      }
+    });
   });
 });

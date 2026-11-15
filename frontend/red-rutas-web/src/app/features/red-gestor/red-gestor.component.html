@@ -223,6 +223,14 @@
         </button>
       </div>
       <div class="header-actions">
+        <div class="red-selector-group">
+          <button class="btn btn-outline btn-sm" [class.btn-active-red]="redSeleccionada() === 1" (click)="cargarRedSeleccionada(1)" title="Cargar Red Urbana (40 paradas)">
+            Red 40
+          </button>
+          <button class="btn btn-outline btn-sm" [class.btn-active-red]="redSeleccionada() === 2" (click)="cargarRedSeleccionada(2)" title="Cargar Red Grande W-RQ-02 (400 paradas, 1.100 tramos)">
+            Red 400 (W-RQ-02)
+          </button>
+        </div>
         <button class="btn btn-outline" (click)="recargarRed()" [disabled]="redService.cargando()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
             <polyline points="1 4 1 10 7 10"></polyline>

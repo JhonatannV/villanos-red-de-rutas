@@ -89,8 +89,15 @@ export class RedGestorComponent implements OnInit {
     this.redService.cambiarEstadoTramo(tramoId, !estadoActual).subscribe();
   }
 
+  readonly redSeleccionada = signal<number>(1);
+
+  cargarRedSeleccionada(redId: number): void {
+    this.redSeleccionada.set(redId);
+    this.redService.cargarRed(redId).subscribe();
+  }
+
   recargarRed(): void {
-    this.redService.cargarRed(1).subscribe();
+    this.redService.cargarRed(this.redSeleccionada()).subscribe();
   }
 
   getParadaNombre(id: number): string {
