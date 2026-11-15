@@ -1,5 +1,5 @@
 <div class="visor-wrapper">
-  <!-- Barra de Herramientas y Controles de Zoom/Paneo -->
+  <!-- Barra de Herramientas y Controles de Zoom/Paneo (RF-02) -->
   <div class="visor-toolbar">
     <div class="toolbar-title">
       <div class="toolbar-icon-badge">
@@ -17,30 +17,6 @@
         {{ redService.totalParadas() }} Nodos &middot; {{ redService.totalTramos() }} Aristas
       </span>
     </div>
-
-    <!-- Indicador de Selección de Origen y Destino -->
-    @if (paradaOrigen() || paradaDestino()) {
-      <div class="route-planner-bar">
-        <div class="route-point">
-          <span class="point-badge point-badge-origin">ORIGEN</span>
-          <span class="point-name point-origin">{{ paradaOrigen()?.nombre ?? '(Elige en el mapa)' }}</span>
-        </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="route-arrow">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-        <div class="route-point">
-          <span class="point-badge point-badge-dest">DESTINO</span>
-          <span class="point-name point-dest">{{ paradaDestino()?.nombre ?? '(Elige en el mapa)' }}</span>
-        </div>
-        <button class="btn-clear-route" (click)="limpiarSeleccionRuta()" title="Limpiar selección de ruta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    }
 
     <div class="toolbar-controls">
       <div class="zoom-controls">
@@ -81,48 +57,6 @@
     </div>
   </div>
 
-  <!-- Panel de Resultado de Ruta Óptima (Dijkstra - RF-03) -->
-  @if (rutaOptima(); as ruta) {
-    @if (ruta.encontrada) {
-      <div class="route-result-banner">
-        <div class="result-header">
-          <div class="result-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="result-icon">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Ruta Más Rápida Encontrada (Dijkstra)</span>
-          </div>
-          <div class="result-cost">
-            Tiempo Total Estimado: <strong class="cost-number">{{ ruta.costoTotal }} minutos</strong>
-          </div>
-        </div>
-
-        <div class="result-path-container">
-          <span class="path-title">Secuencia de Paradas ({{ ruta.paradas.length }} estaciones):</span>
-          <div class="path-chips">
-            @for (p of ruta.paradas; track p.id; let isLast = $last) {
-              <span class="path-chip" [class.chip-origin]="$first" [class.chip-dest]="isLast">
-                #{{ p.id }} {{ p.nombre }}
-              </span>
-              @if (!isLast) {
-                <span class="path-separator">&rarr;</span>
-              }
-            }
-          </div>
-        </div>
-      </div>
-    } @else {
-      <div class="route-error-banner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-icon">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span>{{ ruta.mensaje }}</span>
-      </div>
-    }
-  }
-
   <!-- Contenedor Interactivo SVG con Paneo y Zoom -->
   <div class="canvas-container">
     <svg #svgCanvas
@@ -132,7 +66,7 @@
          (mousemove)="onMouseMove($event)"
          (wheel)="onWheel($event)">
 
-      <!-- Definiciones de Gradientes, Filtros y Puntas de Flecha -->
+      <!-- Definiciones de Gradientes y Filtros -->
       <defs>
         <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
           <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
@@ -144,28 +78,8 @@
           <stop offset="100%" stop-color="#2563eb"/>
         </linearGradient>
 
-        <linearGradient id="originGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#059669"/>
-          <stop offset="100%" stop-color="#10b981"/>
-        </linearGradient>
-
-        <linearGradient id="destGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#e11d48"/>
-          <stop offset="100%" stop-color="#f43f5e"/>
-        </linearGradient>
-
-        <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#10b981"/>
-          <stop offset="100%" stop-color="#06b6d4"/>
-        </linearGradient>
-
         <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-        </filter>
-
-        <filter id="glow-route" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="4" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over"/>
         </filter>
       </defs>
@@ -173,12 +87,11 @@
       <!-- Rejilla de Fondo -->
       <rect width="100%" height="100%" fill="url(#grid)" />
 
-      <!-- Capa 1: Aristas / Tramos Base -->
+      <!-- Capa 1: Aristas / Tramos -->
       <g class="edges-layer">
         @for (tramo of redService.tramos(); track tramo.id) {
           @let c1 = getCoordenadaParada(tramo.origen);
           @let c2 = getCoordenadaParada(tramo.destino);
-          @let enRuta = esTramoDeRuta(tramo.id);
           @let conectado = esTramoConectado(tramo);
 
           <line [attr.x1]="c1.x"
@@ -188,82 +101,43 @@
                 class="tramo-line"
                 [class.tramo-abierto]="tramo.abierto"
                 [class.tramo-cerrado]="!tramo.abierto"
-                [class.tramo-highlight]="conectado && !enRuta"
-                [class.tramo-optimo]="enRuta" />
+                [class.tramo-highlight]="conectado" />
         }
       </g>
 
-      <!-- Capa 2: Aristas de la Ruta Óptima Superpuestas con Brillo -->
-      @if (rutaOptima(); as ruta) {
-        @if (ruta.encontrada && ruta.segmentos.length > 0) {
-          <g class="route-highlight-layer">
-            @for (seg of ruta.segmentos; track seg.tramoId) {
-              <line [attr.x1]="seg.origen.x"
-                    [attr.y1]="seg.origen.y"
-                    [attr.x2]="seg.destino.x"
-                    [attr.y2]="seg.destino.y"
-                    class="tramo-dijkstra-glow"
-                    filter="url(#glow-route)" />
-              <line [attr.x1]="seg.origen.x"
-                    [attr.y1]="seg.origen.y"
-                    [attr.x2]="seg.destino.x"
-                    [attr.y2]="seg.destino.y"
-                    class="tramo-dijkstra-core" />
-            }
-          </g>
-        }
-      }
-
-      <!-- Capa 3: Etiquetas de Peso Anticolisión (RF-02) -->
+      <!-- Capa 2: Etiquetas de Peso Anticolisión (RF-02) -->
       <g class="weights-layer">
         @for (etiqueta of etiquetasPeso(); track etiqueta.tramoId) {
-          @let esRuta = esTramoDeRuta(etiqueta.tramoId);
-
           <g [attr.transform]="'translate(' + etiqueta.x + ',' + etiqueta.y + ')'"
              class="weight-badge-group">
             <rect x="-13" y="-8.5" width="26" height="17" rx="5"
                   class="weight-badge-bg"
-                  [class.badge-closed]="!etiqueta.abierto"
-                  [class.badge-ruta]="esRuta" />
+                  [class.badge-closed]="!etiqueta.abierto" />
             <text x="0" y="3.5" text-anchor="middle"
                   class="weight-badge-text"
-                  [class.text-closed]="!etiqueta.abierto"
-                  [class.text-ruta]="esRuta">
+                  [class.text-closed]="!etiqueta.abierto">
               {{ etiqueta.peso }}m
             </text>
           </g>
         }
       </g>
 
-      <!-- Capa 4: Nodos / Paradas -->
+      <!-- Capa 3: Nodos / Paradas -->
       <g class="nodes-layer">
         @for (parada of redService.paradas(); track parada.id) {
           @let seleccionado = paradaSeleccionada()?.id === parada.id;
-          @let esOrigen = paradaOrigen()?.id === parada.id;
-          @let esDestino = paradaDestino()?.id === parada.id;
-          @let esEnRuta = esParadaDeRuta(parada.id);
 
           <g class="node-group"
              [attr.transform]="'translate(' + parada.x + ',' + parada.y + ')'"
              (click)="seleccionarParada(parada)">
 
-            <!-- Halos exteriores según estado -->
-            @if (esOrigen) {
-              <circle r="22" class="node-halo halo-origin" />
-            } @else if (esDestino) {
-              <circle r="22" class="node-halo halo-dest" />
-            } @else if (esEnRuta) {
-              <circle r="20" class="node-halo halo-ruta" />
-            } @else if (seleccionado) {
+            @if (seleccionado) {
               <circle r="20" class="node-halo halo-selected" />
             }
 
             <circle r="14"
                     class="node-circle"
                     [class.node-selected]="seleccionado"
-                    [class.node-origin]="esOrigen"
-                    [class.node-dest]="esDestino"
-                    [class.node-ruta]="esEnRuta && !esOrigen && !esDestino"
                     filter="url(#glow)" />
 
             <!-- ID numérico de la parada -->
@@ -280,7 +154,7 @@
       </g>
     </svg>
 
-    <!-- Inspector Flotante al Seleccionar Parada -->
+    <!-- Inspector de la Estación al Seleccionar Parada -->
     @if (paradaSeleccionada(); as p) {
       <div class="node-inspector-card">
         <div class="inspector-header">
@@ -298,24 +172,6 @@
         </div>
 
         <div class="inspector-body">
-          <div class="inspector-actions">
-            <button class="btn-action btn-action-origin" (click)="marcarComoOrigen(p)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              Marcar como Origen
-            </button>
-            <button class="btn-action btn-action-dest" (click)="marcarComoDestino(p)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              Marcar como Destino
-            </button>
-          </div>
-
-          <!-- Conexiones directas -->
           <div class="connections-list">
             <span class="conn-title">Tramos Conectados:</span>
             <div class="conn-items">
@@ -331,19 +187,15 @@
       </div>
     }
 
-    <!-- Leyenda de Colores Moderna -->
+    <!-- Leyenda de Colores -->
     <div class="map-legend">
       <div class="legend-item">
         <span class="legend-color legend-open"></span>
         <span>Vía Normal</span>
       </div>
       <div class="legend-item">
-        <span class="legend-color legend-route"></span>
-        <span>Ruta Más Rápida (Dijkstra)</span>
-      </div>
-      <div class="legend-item">
         <span class="legend-color legend-closed"></span>
-        <span>Cierre Vial</span>
+        <span>Cierre Vial (Mantenimiento)</span>
       </div>
       <div class="legend-item">
         <span class="legend-badge">10m</span>

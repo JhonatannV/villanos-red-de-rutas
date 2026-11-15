@@ -68,205 +68,6 @@
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
-/* Route Planner Preview Bar */
-.route-planner-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: rgba(10, 16, 29, 0.95);
-  padding: 0.35rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
-}
-
-.route-point {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.point-badge {
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 0.15rem 0.45rem;
-  border-radius: 5px;
-  letter-spacing: 0.05em;
-}
-
-.point-badge-origin {
-  background: rgba(16, 185, 129, 0.2);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.point-badge-dest {
-  background: rgba(244, 63, 94, 0.2);
-  color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.4);
-}
-
-.point-name {
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.point-origin {
-  color: #34d399;
-}
-
-.point-dest {
-  color: #fb7185;
-}
-
-.route-arrow {
-  width: 14px;
-  height: 14px;
-  color: #38bdf8;
-}
-
-.btn-clear-route {
-  background: transparent;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 0.2rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-}
-
-.btn-clear-route:hover {
-  color: #f43f5e;
-}
-
-.btn-clear-route svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Route Result Banner (Dijkstra Outcome) */
-.route-result-banner {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.35);
-  padding: 0.9rem 1.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.result-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 800;
-  font-size: 0.88rem;
-  color: #34d399;
-}
-
-.result-icon {
-  width: 18px;
-  height: 18px;
-  color: #34d399;
-}
-
-.result-cost {
-  font-size: 0.85rem;
-  color: #cbd5e1;
-}
-
-.cost-number {
-  color: #38bdf8;
-  font-size: 1rem;
-  font-family: var(--font-mono, monospace);
-  background: rgba(14, 23, 42, 0.8);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-}
-
-.result-path-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.path-title {
-  font-size: 0.74rem;
-  color: #94a3b8;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.path-chips {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.path-chip {
-  background: rgba(14, 23, 42, 0.8);
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.chip-origin {
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.chip-dest {
-  border-color: rgba(244, 63, 94, 0.4);
-  color: #fb7185;
-  background: rgba(244, 63, 94, 0.1);
-}
-
-.path-separator {
-  color: #06b6d4;
-  font-weight: 800;
-  font-size: 0.9rem;
-}
-
-.route-error-banner {
-  background: rgba(244, 63, 94, 0.15);
-  border-bottom: 1px solid rgba(244, 63, 94, 0.35);
-  padding: 0.8rem 1.6rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: #fecdd3;
-  font-size: 0.84rem;
-  font-weight: 600;
-}
-
-.error-icon {
-  width: 18px;
-  height: 18px;
-  color: #f43f5e;
-}
-
 /* Toolbar Controls */
 .toolbar-controls {
   display: flex;
@@ -389,26 +190,6 @@
   opacity: 1 !important;
 }
 
-.tramo-optimo {
-  stroke: #10b981 !important;
-  stroke-width: 5 !important;
-  stroke-linecap: round;
-}
-
-/* Capa de Brillo para Ruta Óptima */
-.tramo-dijkstra-glow {
-  stroke: #10b981;
-  stroke-width: 8;
-  stroke-linecap: round;
-  opacity: 0.6;
-}
-
-.tramo-dijkstra-core {
-  stroke: #a7f3d0;
-  stroke-width: 4.5;
-  stroke-linecap: round;
-}
-
 /* Etiquetas de Peso Anticolisión */
 .weight-badge-group {
   cursor: default;
@@ -425,12 +206,6 @@
   stroke: #f43f5e;
 }
 
-.badge-ruta {
-  fill: #064e3b !important;
-  stroke: #10b981 !important;
-  stroke-width: 1.5 !important;
-}
-
 .weight-badge-text {
   fill: #cbd5e1;
   font-size: 8.5px;
@@ -441,11 +216,6 @@
 
 .text-closed {
   fill: #fb7185;
-}
-
-.text-ruta {
-  fill: #a7f3d0 !important;
-  font-weight: 800 !important;
 }
 
 /* Nodos / Paradas */
@@ -472,24 +242,6 @@
   stroke-width: 3.5 !important;
 }
 
-.node-origin {
-  fill: url(#originGrad) !important;
-  stroke: #a7f3d0 !important;
-  stroke-width: 3.5 !important;
-}
-
-.node-dest {
-  fill: url(#destGrad) !important;
-  stroke: #fecdd3 !important;
-  stroke-width: 3.5 !important;
-}
-
-.node-ruta {
-  fill: #059669 !important;
-  stroke: #6ee7b7 !important;
-  stroke-width: 3 !important;
-}
-
 .node-halo {
   fill: none;
   stroke-width: 2;
@@ -499,18 +251,6 @@
 
 .halo-selected {
   stroke: #38bdf8;
-}
-
-.halo-origin {
-  stroke: #10b981;
-}
-
-.halo-dest {
-  stroke: #f43f5e;
-}
-
-.halo-ruta {
-  stroke: #34d399;
 }
 
 @keyframes pulse-ring {
@@ -614,53 +354,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.inspector-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.btn-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.btn-action svg {
-  width: 14px;
-  height: 14px;
-}
-
-.btn-action-origin {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.btn-action-origin:hover {
-  background: rgba(16, 185, 129, 0.3);
-}
-
-.btn-action-dest {
-  background: rgba(244, 63, 94, 0.15);
-  color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.3);
-}
-
-.btn-action-dest:hover {
-  background: rgba(244, 63, 94, 0.3);
-}
-
 .connections-list {
   display: flex;
   flex-direction: column;
@@ -679,7 +372,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  max-height: 130px;
+  max-height: 150px;
   overflow-y: auto;
 }
 
@@ -688,7 +381,7 @@
   justify-content: space-between;
   align-items: center;
   background: rgba(10, 16, 29, 0.7);
-  padding: 0.3rem 0.6rem;
+  padding: 0.35rem 0.6rem;
   border-radius: 6px;
   font-size: 0.74rem;
   color: #cbd5e1;
@@ -737,11 +430,6 @@
 .legend-open {
   background: #38bdf8;
   box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
-}
-
-.legend-route {
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
 }
 
 .legend-closed {
