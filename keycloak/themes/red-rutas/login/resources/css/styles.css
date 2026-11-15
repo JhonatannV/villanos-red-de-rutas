@@ -1,6 +1,15 @@
 /* Custom Theme for Keycloak - Red de Rutas (Equipo Villanos) */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+/* Reset PatternFly default light variables */
+:root {
+  --pf-global--BackgroundColor--100: transparent !important;
+  --pf-global--BackgroundColor--200: #0e1726 !important;
+  --pf-global--Color--100: #f8fafc !important;
+  --pf-global--Color--200: #94a3b8 !important;
+  --pf-global--BorderColor--100: rgba(255, 255, 255, 0.12) !important;
+}
+
 html.login-pf,
 body {
   background-color: #080d1a !important;
@@ -19,11 +28,25 @@ body {
 }
 
 .login-pf-page {
-  padding-top: 5vh;
+  padding-top: 6vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* HIDE THE UGLY LANGUAGE / LOCALE SELECTOR COMPLETELY */
+#kc-locale,
+#kc-locale-wrapper,
+.pf-c-dropdown,
+.login-pf-page-header .pf-c-dropdown,
+.pf-c-dropdown__menu,
+.pf-c-dropdown__toggle {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
 }
 
 /* Header / Title */
@@ -34,7 +57,7 @@ body {
 }
 
 #kc-header-wrapper {
-  font-size: 1.75rem !important;
+  font-size: 1.85rem !important;
   font-weight: 800 !important;
   letter-spacing: 2px !important;
   text-transform: uppercase !important;
@@ -42,20 +65,20 @@ body {
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   display: inline-block;
-  text-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+  text-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
 }
 
 /* Main Card */
 .card-pf {
-  background: rgba(19, 30, 51, 0.88) !important;
+  background: rgba(19, 30, 51, 0.90) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(56, 189, 248, 0.28) !important;
+  border: 1px solid rgba(56, 189, 248, 0.30) !important;
   border-radius: 18px !important;
   box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.75),
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
     0 0 35px rgba(6, 182, 212, 0.18) !important;
-  max-width: 440px !important;
+  max-width: 420px !important;
   width: 90% !important;
   margin: 0 auto !important;
   padding: 2.25rem 2.5rem !important;
@@ -70,24 +93,31 @@ body {
 }
 
 #kc-page-title {
-  font-size: 1.25rem !important;
+  font-size: 1.35rem !important;
   font-weight: 700 !important;
   color: #f8fafc !important;
   text-align: center !important;
   margin: 0 !important;
+  letter-spacing: 0.5px !important;
 }
 
-/* Form Labels */
+/* Form Groups and Labels */
+.form-group {
+  margin-bottom: 1.35rem !important;
+  width: 100% !important;
+}
+
 .control-label,
 label {
   color: #94a3b8 !important;
   font-size: 0.85rem !important;
   font-weight: 600 !important;
   margin-bottom: 0.45rem !important;
-  display: block;
+  display: block !important;
+  text-align: left !important;
 }
 
-/* Form Inputs */
+/* Form Inputs (Standalone) */
 .form-control,
 input[type="text"],
 input[type="password"] {
@@ -112,8 +142,68 @@ input[type="password"]:focus {
   background-color: #121c2e !important;
 }
 
-.form-group {
-  margin-bottom: 1.35rem !important;
+/* Password Input Group (with Eye Icon Button) */
+.pf-c-input-group {
+  background-color: transparent !important;
+  border: none !important;
+  display: flex !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pf-c-input-group .form-control,
+.pf-c-input-group input[type="password"],
+.pf-c-input-group input[type="text"] {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+  background-color: #0e1726 !important;
+  color: #f8fafc !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+}
+
+.pf-c-input-group .pf-c-button,
+.pf-c-input-group .pf-c-button:hover,
+.pf-c-input-group .pf-c-button:focus,
+.pf-c-input-group .pf-c-button:active,
+.pf-c-button.pf-m-control {
+  background-color: #0e1726 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-left: none !important;
+  border-top-right-radius: 10px !important;
+  border-bottom-right-radius: 10px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  color: #94a3b8 !important;
+  padding: 0 0.95rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.pf-c-input-group:focus-within .form-control,
+.pf-c-input-group:focus-within input {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25) !important;
+}
+
+.pf-c-input-group:focus-within .pf-c-button {
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25) !important;
+}
+
+.pf-c-button.pf-m-control svg,
+.pf-c-button.pf-m-control i {
+  fill: currentColor !important;
+  color: inherit !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 /* Submit Button */
@@ -146,14 +236,6 @@ input[type="password"]:focus {
   transform: translateY(0) !important;
 }
 
-/* Password Toggle Icon */
-.pf-c-form-control__icon,
-.pf-c-button.pf-m-control {
-  background: transparent !important;
-  color: #94a3b8 !important;
-  border: none !important;
-}
-
 /* Alerts and Messages */
 .alert {
   border-radius: 10px !important;
@@ -181,7 +263,7 @@ input[type="password"]:focus {
   color: #fde68a !important;
 }
 
-/* Remove ugly background shadows and borders from default patternfly */
+/* Eliminate default patternfly pseudo-elements */
 .login-pf-page .card-pf::before {
   display: none !important;
 }
