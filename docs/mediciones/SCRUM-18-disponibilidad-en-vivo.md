@@ -35,7 +35,7 @@ Al levantar el sistema completo por primera vez aparecieron tres fallas de integ
 
 ## Alcance
 
-Esta medición es a nivel de API, a través del gateway, que es donde se decide el escenario. La parte visual de RQ-01 (aviso en pantalla y botón "Reintentar" con el mapa visible) corresponde a SCRUM-32 (Sprint 4), y se medirá con el mismo script cuando exista el frontend.
+Esta medición es a nivel de API, a través del gateway, que es donde se decide el escenario. La parte visual de RQ-01 (aviso en pantalla y botón "Reintentar" con el mapa visible) se midió en SCRUM-32: ver [`SCRUM-32-modo-degradado.md`](SCRUM-32-modo-degradado.md).
 
 ## Cómo repetirlo
 

@@ -42,7 +42,7 @@ Siguiendo rigurosamente el estándar formal de cinco pasos propuesto por Bass, C
 
 | Escenario | Descripción | Meta / Criterio | Valor Medido | Estado |
 |---|---|---|:---:|:---:|
-| **W-RQ-01** | Disponibilidad ante caída de `ruta-service` | Corte Gateway a $2.0\text{ s}$ con 503; recuperación $< 30\text{ s}$ | **2.01 s** y **12.4 s** | ✅ CUMPLE |
+| **W-RQ-01** | Disponibilidad ante caída de `ruta-service` | Corte Gateway a $2.0\text{ s}$ con 503; recuperación $< 30\text{ s}$ | **2.01 s** y **10.2 s** (SCRUM-32) | ✅ CUMPLE |
 | **W-RQ-02** | Renderizado red 400x1100 en Angular | Dibujo $< 2.000\text{ ms}$; crecimiento lineal; tareas $< 100\text{ ms}$ | **702.81 ms**, $O(M)$ en **1.27 ms**, max **36.51 ms** | ✅ CUMPLE |
 | **W-RQ-03** | Latencia Gateway en red 400x1100 | $p95 < 400\text{ ms}$ en 20 consultas; ratio traza $< 2.0\times$ | **$p95 = 77.14\text{ ms}$**, ratio **1.07x** | ✅ CUMPLE |
 | **A-RQ-01** | Eficiencia algorítmica Dijkstra en C | Montículo binario $O(E \log V)$; $p95 < 400\text{ ms}$; paridad | **30 µs/consulta**; paridad con Java | ✅ CUMPLE |

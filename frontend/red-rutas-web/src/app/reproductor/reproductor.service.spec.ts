@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { MS_POR_PASO, ReproductorService } from './reproductor.service';
+import { MS_LIMITE_CONSULTA, MS_POR_PASO, ReproductorService, SEGUNDOS_REINTENTO } from './reproductor.service';
 import { construirTrazaDijkstra } from './traza.builder';
 import { BFS_PEQUENO, RUTA_GUIA, nombreGuia } from './traza.fixtures';
 
@@ -18,7 +18,7 @@ describe('ReproductorService (RF-04 · controles VCR)', () => {
   });
 
   afterEach(() => {
-    rep.pausar();
+    rep.limpiar();
     http.verify();
     vi.useRealTimers();
   });
@@ -145,16 +145,77 @@ describe('ReproductorService (RF-04 · controles VCR)', () => {
     expect(rep.claseTramo(0, 2)).toBe('arbol');
   });
 
-  it('traduce un 503 del gateway en un mensaje claro', () => {
-    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 4, redId: 1 }, nombreGuia)
-      .subscribe({ error: () => undefined });
+  const flush503 = (motivo = 'TIMEOUT') =>
     http.expectOne(r => r.url.endsWith('/api/rutas/calcular')).flush(
-      { mensaje: 'El microservicio ruta-service no esta disponible.' },
+      { servicio: 'ruta-service', motivo, mensaje: 'El microservicio ruta-service no esta disponible.' },
       { status: 503, statusText: 'Service Unavailable' }
     );
-    expect(rep.error()).toContain('ruta-service');
+
+  it('un 503 del gateway activa el modo degradado sin perder la traza anterior', () => {
+    cargarGuia();
+    rep.irA(3);
+    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 4, redId: 1 }, nombreGuia)
+      .subscribe({ error: () => undefined });
+    flush503('CONEXION_RECHAZADA');
+
+    expect(rep.degradado()?.servicio).toBe('ruta-service');
+    expect(rep.degradado()?.motivo).toBe('CONEXION_RECHAZADA');
+    expect(rep.error()).toBeNull();
     expect(rep.cargando()).toBe(false);
-    expect(rep.traza()).toBeNull();
+    expect(rep.reintentoEn()).toBe(SEGUNDOS_REINTENTO);
+    expect(rep.traza()?.pasos.length).toBe(6);
+    expect(rep.indice()).toBe(3);
+  });
+
+  it('reintenta solo cada 10 s y sale del modo degradado cuando el servicio vuelve', () => {
+    vi.useFakeTimers();
+    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 4, redId: 1 }, nombreGuia)
+      .subscribe({ error: () => undefined });
+    flush503();
+    expect(rep.degradado()?.intentos).toBe(1);
+
+    vi.advanceTimersByTime(SEGUNDOS_REINTENTO * 1000);
+    flush503();
+    expect(rep.degradado()?.intentos).toBe(2);
+
+    vi.advanceTimersByTime(4000);
+    expect(rep.reintentoEn()).toBe(SEGUNDOS_REINTENTO - 4);
+    rep.reintentar();
+    http.expectOne(r => r.url.endsWith('/api/rutas/calcular')).flush(RUTA_GUIA);
+
+    expect(rep.degradado()).toBeNull();
+    expect(rep.reintentoEn()).toBeNull();
+    expect(rep.recuperado()).toContain('volvió a responder');
+    expect(rep.traza()?.costoTotal).toBe(11);
+  });
+
+  it('sin conexión con el gateway también es modo degradado', () => {
+    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 4, redId: 1 }, nombreGuia)
+      .subscribe({ error: () => undefined });
+    http.expectOne(() => true).error(new ProgressEvent('error'), { status: 0 });
+    expect(rep.degradado()?.servicio).toBe('api-gateway');
+    expect(rep.degradado()?.motivo).toBe('SIN_CONEXION');
+  });
+
+  it('si nadie responde, el límite del navegador evita el spinner infinito', () => {
+    vi.useFakeTimers();
+    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 4, redId: 1 }, nombreGuia)
+      .subscribe({ error: () => undefined });
+    const req = http.expectOne(() => true);
+    expect(rep.cargando()).toBe(true);
+    vi.advanceTimersByTime(MS_LIMITE_CONSULTA);
+    expect(rep.cargando()).toBe(false);
+    expect(rep.degradado()?.motivo).toBe('TIMEOUT');
+    expect(req.cancelled).toBe(true);
+    rep.limpiar();
+  });
+
+  it('un 400 es un error normal, no modo degradado', () => {
+    rep.consultar({ algoritmo: 'dijkstra', desde: 0, hasta: 99, redId: 1 }, nombreGuia)
+      .subscribe({ error: () => undefined });
+    http.expectOne(() => true).flush({ mensaje: 'La parada no existe' }, { status: 400, statusText: 'Bad Request' });
+    expect(rep.degradado()).toBeNull();
+    expect(rep.error()).toContain('no existe');
   });
 
   it('un 401 pide iniciar sesión', () => {
