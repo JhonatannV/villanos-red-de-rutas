@@ -1,5 +1,6 @@
 package com.villanos.ruta.controller;
 
+import com.villanos.ruta.algoritmo.DijkstraJava;
 import com.villanos.ruta.algoritmo.DijkstraJava.ResultadoRuta;
 import com.villanos.ruta.calculo.CalculadorRutas;
 import com.villanos.ruta.calculo.ModoAlgoritmo;
@@ -35,6 +36,7 @@ public class RutaController {
                                           @RequestParam(defaultValue = "1") int redId,
                                           @RequestParam(required = false) Integer sin,
                                           @RequestParam(required = false) String modo,
+                                          @RequestParam(defaultValue = "false") boolean traza,
                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String autorizacion) {
         CalculadorRutas calculador = this.calculadorRutas;
         if (modo != null && !modo.isBlank()) {
@@ -65,6 +67,18 @@ public class RutaController {
         respuesta.put("nodosCerrados", resultado.nodosCerrados);
         respuesta.put("modoEfectivo", calculador.modoEfectivo().name());
         respuesta.put("tramoCerrado", sin);
+
+        if (traza) {
+            // RF-04: libgrafo solo devuelve camino y costo; la traza paso a paso la arma
+            // la versión Java sobre la misma red (misma regla de desempate, D-06).
+            List<DijkstraJava.PasoTraza> pasos = resultado.pasos;
+            if (pasos.isEmpty()) {
+                pasos = DijkstraJava.calcular(red.numParadas(), red.numTramos(), red.origen(), red.destino(),
+                        red.peso(), desde, hasta).pasos;
+            }
+            respuesta.put("trazaCalculadaCon", "JAVA");
+            respuesta.put("pasos", pasos);
+        }
 
         if (resultado.costoTotal == -1) {
             respuesta.put("mensaje", "No existe camino alcanzable entre las paradas indicadas.");

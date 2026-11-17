@@ -93,6 +93,7 @@
           @let c1 = getCoordenadaParada(tramo.origen);
           @let c2 = getCoordenadaParada(tramo.destino);
           @let conectado = esTramoConectado(tramo);
+          @let traza = tramo.abierto ? rep.claseTramo(tramo.origen, tramo.destino) : null;
 
           <line [attr.x1]="c1.x"
                 [attr.y1]="c1.y"
@@ -101,7 +102,10 @@
                 class="tramo-line"
                 [class.tramo-abierto]="tramo.abierto"
                 [class.tramo-cerrado]="!tramo.abierto"
-                [class.tramo-highlight]="conectado" />
+                [class.tramo-highlight]="conectado"
+                [class.tramo-traza-arbol]="traza === 'arbol'"
+                [class.tramo-traza-evaluado]="traza === 'evaluado'"
+                [class.tramo-traza-camino]="traza === 'camino'" />
         }
       </g>
 
@@ -126,6 +130,8 @@
       <g class="nodes-layer">
         @for (parada of redService.paradas(); track parada.id) {
           @let seleccionado = paradaSeleccionada()?.id === parada.id;
+          @let estadoTraza = rep.estadoDe(parada.id);
+          @let valorTraza = rep.valorDe(parada.id);
 
           <g class="node-group"
              [attr.transform]="'translate(' + parada.x + ',' + parada.y + ')'"
@@ -135,10 +141,26 @@
               <circle r="20" class="node-halo halo-selected" />
             }
 
+            @if (estadoTraza === 'actual') {
+              <circle r="21" class="node-halo halo-traza-actual" />
+            }
+
             <circle r="14"
                     class="node-circle"
                     [class.node-selected]="seleccionado"
+                    [class.node-traza-actual]="estadoTraza === 'actual'"
+                    [class.node-traza-cerrada]="estadoTraza === 'cerrada'"
+                    [class.node-traza-frontera]="estadoTraza === 'frontera'"
+                    [class.node-traza-camino]="rep.enCamino(parada.id)"
                     filter="url(#glow)" />
+
+            <!-- Valor tentativo en este paso del reproductor (distancia, nivel o profundidad) -->
+            @if (valorTraza !== null) {
+              <g class="traza-valor" [class.traza-valor-actual]="estadoTraza === 'actual'" transform="translate(0,-25)">
+                <rect x="-14" y="-9" width="28" height="16" rx="5" />
+                <text x="0" y="3" text-anchor="middle">{{ valorTraza }}</text>
+              </g>
+            }
 
             <!-- ID numérico de la parada -->
             <text x="0" y="4" text-anchor="middle" class="node-id">

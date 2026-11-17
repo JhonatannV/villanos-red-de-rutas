@@ -1,0 +1,224 @@
+<section class="rep-card" aria-labelledby="rep-titulo">
+  <header class="rep-header">
+    <div class="rep-title">
+      <div class="rep-icon-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tool-icon">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </div>
+      <div>
+        <h3 id="rep-titulo">Reproductor paso a paso</h3>
+        <span class="rep-subtitle">RF-04 &middot; Dijkstra, BFS y DFS sobre el mapa</span>
+      </div>
+    </div>
+
+    <div class="rep-consulta">
+      <div class="segmented" role="group" aria-label="Algoritmo">
+        @for (a of algoritmos; track a.id) {
+          <button type="button"
+                  [class.active]="algoritmo() === a.id"
+                  [attr.aria-pressed]="algoritmo() === a.id"
+                  (click)="elegirAlgoritmo(a.id)">{{ a.etiqueta }}</button>
+        }
+      </div>
+
+      <label class="campo">
+        <span>Origen</span>
+        <select [value]="desde()" (change)="cambiarDesde($any($event.target).value)" aria-label="Parada de origen">
+          @for (p of paradasOrdenadas(); track p.id) {
+            <option [value]="p.id" [selected]="p.id === desde()">{{ p.id }} &middot; {{ p.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      @if (algoritmo() === 'dijkstra') {
+        <label class="campo">
+          <span>Destino</span>
+          <select [value]="hasta()" (change)="cambiarHasta($any($event.target).value)" aria-label="Parada de destino">
+            @for (p of paradasOrdenadas(); track p.id) {
+              <option [value]="p.id" [selected]="p.id === hasta()">{{ p.id }} &middot; {{ p.nombre }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      <button type="button" class="btn btn-primary" (click)="calcular()"
+              [disabled]="rep.cargando() || mismaParada() || redService.totalParadas() === 0">
+        @if (rep.cargando()) {
+          <span class="spinner" aria-hidden="true"></span> Calculando…
+        } @else {
+          {{ algoritmo() === 'dijkstra' ? 'Calcular ruta' : 'Recorrer red' }}
+        }
+      </button>
+    </div>
+  </header>
+
+  @if (mismaParada()) {
+    <p class="rep-aviso">Elige un destino distinto del origen.</p>
+  }
+
+  @if (rep.error(); as error) {
+    <div class="rep-error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ error }}</span>
+    </div>
+  }
+
+  @if (rep.traza(); as traza) {
+    @let paso = rep.pasoActual();
+
+    <div class="vcr" role="group" aria-label="Controles de reproducción">
+      <div class="vcr-botones">
+        <button type="button" class="vcr-btn" (click)="rep.irInicio()" [disabled]="rep.enInicio()"
+                title="Ir al inicio" aria-label="Ir al inicio">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="5" width="2.5" height="14" rx="1"></rect><polygon points="20 5 8 12 20 19"></polygon></svg>
+        </button>
+        <button type="button" class="vcr-btn" (click)="rep.anterior()" [disabled]="rep.enInicio()"
+                title="Paso anterior (←)" aria-label="Paso anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Atrás</span>
+        </button>
+        <button type="button" class="vcr-btn vcr-play" (click)="rep.alternar()" [disabled]="rep.totalPasos() < 2"
+                [title]="rep.reproduciendo() ? 'Pausar (espacio)' : 'Reproducir (espacio)'"
+                [attr.aria-label]="rep.reproduciendo() ? 'Pausar' : 'Reproducir'">
+          @if (rep.reproduciendo()) {
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
+            <span>Pausa</span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20"></polygon></svg>
+            <span>{{ rep.enFin() ? 'Repetir' : 'Reproducir' }}</span>
+          }
+        </button>
+        <button type="button" class="vcr-btn" (click)="rep.siguiente()" [disabled]="rep.enFin()"
+                title="Paso siguiente (→)" aria-label="Paso siguiente">
+          <span>Siguiente</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+        <button type="button" class="vcr-btn" (click)="rep.irFin()" [disabled]="rep.enFin()"
+                title="Ir al final" aria-label="Ir al final">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="4 5 16 12 4 19"></polygon><rect x="17.5" y="5" width="2.5" height="14" rx="1"></rect></svg>
+        </button>
+      </div>
+
+      <div class="vcr-linea">
+        <input type="range" min="0" [max]="rep.totalPasos() - 1" [value]="rep.indice()"
+               (input)="moverA($any($event.target).value)" aria-label="Línea de tiempo de la traza" />
+        <span class="vcr-contador">Paso {{ rep.indice() }} de {{ rep.totalPasos() - 1 }}</span>
+      </div>
+
+      <div class="segmented segmented-sm" role="group" aria-label="Velocidad">
+        @for (v of velocidades; track v) {
+          <button type="button" [class.active]="rep.velocidad() === v" [attr.aria-pressed]="rep.velocidad() === v"
+                  (click)="rep.cambiarVelocidad(v)">{{ v }}x</button>
+        }
+      </div>
+    </div>
+
+    <div class="rep-cuerpo">
+      <div class="rep-explicacion">
+        @if (paso) {
+          <div class="paso-titulo">
+            <span class="paso-num">{{ paso.numero }}</span>
+            <h4>{{ paso.titulo }}</h4>
+          </div>
+          <ul class="paso-detalle">
+            @for (linea of paso.detalle; track $index) {
+              <li>{{ linea }}</li>
+            }
+          </ul>
+
+          @if (paso.pendientes && traza.nombrePendientes) {
+            <div class="pendientes">
+              <span class="pendientes-label">{{ traza.nombrePendientes }}</span>
+              <div class="chips">
+                @for (q of paso.pendientes; track $index) {
+                  <span class="chip">{{ nombre(q) }}</span>
+                } @empty {
+                  <span class="chip chip-vacio">vacía</span>
+                }
+              </div>
+            </div>
+          }
+        }
+
+        @if (rep.enFin()) {
+          <div class="resultado" [class.resultado-error]="traza.mensaje">
+            @if (traza.algoritmo === 'dijkstra') {
+              @if (traza.costoTotal !== null && traza.costoTotal >= 0) {
+                <strong>Ruta encontrada: {{ traza.costoTotal }} min</strong>
+                <span>{{ caminoNombres().join(' → ') }}</span>
+              } @else {
+                <strong>Sin ruta</strong>
+                <span>{{ traza.mensaje }}</span>
+              }
+              @if (traza.modoEfectivo) {
+                <span class="resultado-meta">Camino calculado en modo {{ traza.modoEfectivo }}</span>
+              }
+            } @else {
+              <strong>Recorrido completo: {{ traza.pasos.length - 1 }} paradas visitadas</strong>
+              @if (traza.mensaje) {
+                <span>{{ traza.mensaje }}</span>
+              }
+            }
+          </div>
+        }
+
+        <div class="leyenda" aria-label="Leyenda">
+          <span><i class="dot dot-actual"></i>Parada actual</span>
+          <span><i class="dot dot-cerrada"></i>{{ traza.algoritmo === 'dijkstra' ? 'Cerrada (distancia definitiva)' : 'Visitada' }}</span>
+          <span><i class="dot dot-frontera"></i>{{ traza.algoritmo === 'dijkstra' ? 'Distancia tentativa' : 'En espera' }}</span>
+          @if (traza.algoritmo === 'dijkstra') {
+            <span><i class="dot dot-camino"></i>Ruta final</span>
+          }
+        </div>
+      </div>
+
+      <div class="rep-tabla-wrap">
+        <table class="rep-tabla">
+          <caption>{{ traza.algoritmo === 'dijkstra' ? 'Distancias tentativas en este paso' : traza.columnaValor + ' de cada parada en este paso' }}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Parada</th>
+              <th scope="col" class="num">{{ traza.columnaValor }}</th>
+              <th scope="col">Llegó desde</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of paso?.filas ?? []; track f.parada) {
+              <tr [class]="'fila-' + f.estado" [class.fila-cambio]="f.cambio">
+                <td><span class="id">{{ f.parada }}</span> {{ f.nombre }}</td>
+                <td class="num">
+                  @if (f.cambio && f.cambio.mejora && traza.algoritmo === 'dijkstra') {
+                    <span class="valor-antes">{{ f.cambio.anterior ?? '∞' }}</span> → <strong>{{ f.valor }}</strong>
+                  } @else {
+                    {{ f.valor }}
+                  }
+                </td>
+                <td>{{ f.desdeNombre ?? '—' }}</td>
+                <td>
+                  <span [class]="'estado estado-' + f.estado">
+                    @switch (f.estado) {
+                      @case ('actual') { actual }
+                      @case ('cerrada') { {{ traza.algoritmo === 'dijkstra' ? 'cerrada' : 'visitada' }} }
+                      @default { {{ traza.algoritmo === 'dijkstra' ? 'tentativa' : 'en espera' }} }
+                    }
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else if (!rep.error()) {
+    <p class="rep-vacio">
+      Elige un algoritmo y las paradas, y pulsa <strong>{{ algoritmo() === 'dijkstra' ? 'Calcular ruta' : 'Recorrer red' }}</strong>.
+      Después puedes avanzar, retroceder o reproducir la traza sobre el mapa. Atajos: <kbd>←</kbd> <kbd>→</kbd> y <kbd>espacio</kbd>.
+    </p>
+  }
+</section>
