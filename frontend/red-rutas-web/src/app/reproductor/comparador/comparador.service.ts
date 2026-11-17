@@ -80,6 +80,8 @@ export class ComparadorService {
 
   private readonly tramosOriginal = computed(() => tramosDe(this.comparacion()?.original.camino ?? []));
   private readonly tramosAlterna = computed(() => tramosDe(this.comparacion()?.alterna.camino ?? []));
+  private readonly paradasOriginal = computed(() => new Set(this.comparacion()?.original.camino ?? []));
+  private readonly paradasAlterna = computed(() => new Set(this.comparacion()?.alterna.camino ?? []));
 
   /** Pide la ruta con el tramo cerrado (`sin=`) y la compara con la original. */
   comparar(original: RutaComparada, tramo: Tramo, redId: number): Observable<Comparacion> {
@@ -109,6 +111,14 @@ export class ComparadorService {
   limpiar(): void {
     this.comparacion.set(null);
     this.error.set(null);
+  }
+
+  /** A qué ruta pertenece una parada (la original manda si está en las dos). */
+  claseParada(parada: number): 'original' | 'alterna' | null {
+    if (this.paradasOriginal().has(parada)) {
+      return 'original';
+    }
+    return this.paradasAlterna().has(parada) ? 'alterna' : null;
   }
 
   /** Cómo pintar un tramo del mapa mientras la comparación está activa. */

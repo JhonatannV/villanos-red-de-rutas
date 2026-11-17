@@ -1,330 +1,183 @@
-<div class="gestor-container">
-  <!-- Tarjetas de Metricas de la Red -->
-  <div class="metrics-grid">
-    <div class="metric-card">
-      <div class="metric-icon-box metric-icon-stops">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-      </div>
-      <div class="metric-data">
-        <span class="metric-val">{{ redService.totalParadas() }}</span>
-        <span class="metric-label">Paradas Totales</span>
-      </div>
+<div class="gestor">
+  <!-- Red cargada (RF-01) -->
+  <div class="gestor-fila">
+    <div class="segmented" role="group" aria-label="Red cargada">
+      <button type="button" [class.active]="redSeleccionada() === 1" [attr.aria-pressed]="redSeleccionada() === 1"
+              (click)="cargarRedSeleccionada(1)" title="Red urbana de 40 paradas y 90 tramos">Red de 40 paradas</button>
+      <button type="button" [class.active]="redSeleccionada() === 2" [attr.aria-pressed]="redSeleccionada() === 2"
+              (click)="cargarRedSeleccionada(2)" title="Red grande de 400 paradas y 1.100 tramos (W-RQ-02)">Red de 400</button>
     </div>
-
-    <div class="metric-card">
-      <div class="metric-icon-box metric-icon-routes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="6" cy="6" r="3"></circle>
-          <circle cx="18" cy="18" r="3"></circle>
-          <path d="M8.5 8.5l7 7"></path>
-        </svg>
-      </div>
-      <div class="metric-data">
-        <span class="metric-val">{{ redService.totalTramos() }}</span>
-        <span class="metric-label">Tramos de Conexión</span>
-      </div>
-    </div>
-
-    <div class="metric-card">
-      <div class="metric-icon-box metric-icon-open">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-      </div>
-      <div class="metric-data">
-        <span class="metric-val metric-success">{{ redService.tramosAbiertos() }}</span>
-        <span class="metric-label">Tramos Abiertos</span>
-      </div>
-    </div>
-
-    <div class="metric-card">
-      <div class="metric-icon-box metric-icon-closed">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-          <line x1="12" y1="9" x2="12" y2="13"></line>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-      </div>
-      <div class="metric-data">
-        <span class="metric-val metric-warning">{{ redService.tramosCerrados() }}</span>
-        <span class="metric-label">Tramos en Cierre Vial</span>
-      </div>
-    </div>
+    <button type="button" class="btn btn-outline btn-sm" (click)="recargarRed()" [disabled]="redService.cargando()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" class="btn-icon">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+      Recargar del servidor
+    </button>
   </div>
 
-  <!-- Notificaciones -->
+  <dl class="gestor-cifras num">
+    <div><dt>Paradas</dt><dd>{{ redService.totalParadas() }}</dd></div>
+    <div><dt>Tramos</dt><dd>{{ redService.totalTramos() }}</dd></div>
+    <div><dt>Abiertos</dt><dd class="cifra-ok">{{ redService.tramosAbiertos() }}</dd></div>
+    <div><dt>En cierre</dt><dd [class.cifra-alerta]="redService.tramosCerrados() > 0">{{ redService.tramosCerrados() }}</dd></div>
+  </dl>
+
+  <!-- Avisos -->
   @if (redService.mensajeExito()) {
-    <div class="alert alert-success">
-      <div class="alert-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      </div>
+    <div class="alert alert-success entrar" role="status">
       <span class="alert-text">{{ redService.mensajeExito() }}</span>
-      <button class="alert-close" (click)="redService.limpiarMensajes()">&times;</button>
+      <button type="button" class="alert-close" (click)="redService.limpiarMensajes()" aria-label="Cerrar aviso">×</button>
     </div>
   }
 
   @if (redService.mensajeError()) {
-    <div class="alert alert-danger">
-      <div class="alert-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-      </div>
+    <div class="alert alert-danger entrar" role="alert">
       <span class="alert-text">{{ redService.mensajeError() }}</span>
-      <button class="alert-close" (click)="redService.limpiarMensajes()">&times;</button>
+      <button type="button" class="alert-close" (click)="redService.limpiarMensajes()" aria-label="Cerrar aviso">×</button>
     </div>
   }
 
-  <!-- Panel de Control y Formularios (Habilitado para planificador / admin) -->
-  <div class="forms-grid">
-    <!-- Formulario Crear Parada -->
-    <div class="card form-card">
-      <div class="card-header">
-        <div class="header-title-box">
-          <div class="header-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </div>
-          <h3>Agregar Nueva Parada</h3>
-        </div>
-        @if (!authService.isPlanificador()) {
-          <span class="badge badge-locked">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            Rol Planificador
-          </span>
+  @if (!authService.isPlanificador()) {
+    <p class="gestor-rol">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+        <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+      </svg>
+      <span>
+        @if (authService.isAuthenticated()) {
+          Tu rol <strong>{{ authService.userRoles().includes('consultor') ? 'consultor' : 'actual' }}</strong> puede ver la red.
+        } @else {
+          Sin sesión puedes ver la red.
         }
-      </div>
-      <div class="card-body">
-        <div class="form-group">
-          <label for="paradaNombre">Nombre de la Parada</label>
-          <input id="paradaNombre" type="text" class="form-control" placeholder="Ej: Nueva Estación Terminal"
-                 [ngModel]="nuevaParadaNombre()" (ngModelChange)="nuevaParadaNombre.set($event)"
-                 [disabled]="!authService.isPlanificador()">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="paradaX">Coordenada X (50 - 1150 px)</label>
-            <input id="paradaX" type="number" min="50" max="1150" step="50" class="form-control"
-                   [ngModel]="nuevaParadaX()" (ngModelChange)="nuevaParadaX.set($event)"
-                   [disabled]="!authService.isPlanificador()">
-          </div>
-          <div class="form-group">
-            <label for="paradaY">Coordenada Y (50 - 750 px)</label>
-            <input id="paradaY" type="number" min="50" max="750" step="50" class="form-control"
-                   [ngModel]="nuevaParadaY()" (ngModelChange)="nuevaParadaY.set($event)"
-                   [disabled]="!authService.isPlanificador()">
-          </div>
-        </div>
-        <div style="margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.75rem; color: #94a3b8;">Cuadrícula: paso de 50px</span>
-          <button type="button" class="btn btn-outline btn-sm" (click)="alinearACuadracula()" [disabled]="!authService.isPlanificador()" title="Ajustar a la cuadrícula de puntos">
-            Alinear a Cuadrícula
-          </button>
-        </div>
-        <button class="btn btn-primary btn-block" (click)="crearParada()" [disabled]="!authService.isPlanificador() || redService.cargando()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Persistir Parada en Servidor
-        </button>
-      </div>
-    </div>
+        Crear paradas, crear tramos o cerrarlos requiere el rol <strong>planificador</strong> o <strong>admin</strong>.
+      </span>
+    </p>
+  }
 
-    <!-- Formulario Crear Tramo -->
-    <div class="card form-card">
-      <div class="card-header">
-        <div class="header-title-box">
-          <div class="header-icon-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </div>
-          <h3>Agregar Nuevo Tramo</h3>
-        </div>
-        @if (!authService.isPlanificador()) {
-          <span class="badge badge-locked">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            Rol Planificador
-          </span>
-        }
-      </div>
-      <div class="card-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="tramoOrigen">Parada Origen</label>
-            <select id="tramoOrigen" class="form-control"
-                    [ngModel]="nuevoTramoOrigen()" (ngModelChange)="nuevoTramoOrigen.set($event)"
-                    [disabled]="!authService.isPlanificador()">
-              @for (p of redService.paradas(); track p.id) {
-                <option [value]="p.id">{{ p.nombre }} (ID: {{ p.id }})</option>
-              }
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="tramoDestino">Parada Destino</label>
-            <select id="tramoDestino" class="form-control"
-                    [ngModel]="nuevoTramoDestino()" (ngModelChange)="nuevoTramoDestino.set($event)"
-                    [disabled]="!authService.isPlanificador()">
-              @for (p of redService.paradas(); track p.id) {
-                <option [value]="p.id">{{ p.nombre }} (ID: {{ p.id }})</option>
-              }
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="tramoPeso">Peso del Tramo (Minutos &gt; 0)</label>
-          <input id="tramoPeso" type="number" min="1" class="form-control"
-                 [ngModel]="nuevoTramoPeso()" (ngModelChange)="nuevoTramoPeso.set($event)"
-                 [disabled]="!authService.isPlanificador()">
-        </div>
-        <button class="btn btn-primary btn-block" (click)="crearTramo()" [disabled]="!authService.isPlanificador() || redService.cargando()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Persistir Tramo en Servidor
-        </button>
-      </div>
+  <!-- Nueva parada -->
+  <fieldset class="gestor-form" [disabled]="!authService.isPlanificador()">
+    <legend>Nueva parada</legend>
+    <label class="campo" for="paradaNombre">
+      Nombre
+      <input id="paradaNombre" type="text" class="control" placeholder="Ej. Estación Sur"
+             [ngModel]="nuevaParadaNombre()" (ngModelChange)="nuevaParadaNombre.set($event)">
+    </label>
+    <div class="form-row">
+      <label class="campo" for="paradaX">
+        X (50–1150)
+        <input id="paradaX" type="number" min="50" max="1150" step="50" class="control"
+               [ngModel]="nuevaParadaX()" (ngModelChange)="nuevaParadaX.set($event)">
+      </label>
+      <label class="campo" for="paradaY">
+        Y (50–750)
+        <input id="paradaY" type="number" min="50" max="750" step="50" class="control"
+               [ngModel]="nuevaParadaY()" (ngModelChange)="nuevaParadaY.set($event)">
+      </label>
     </div>
-  </div>
+    <div class="form-acciones">
+      <button type="button" class="btn btn-outline btn-sm" (click)="alinearACuadracula()" title="Redondear las coordenadas a la cuadrícula de 50 px">
+        Alinear a la cuadrícula
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="crearParada()" [disabled]="redService.cargando()">
+        Guardar parada
+      </button>
+    </div>
+  </fieldset>
 
-  <!-- Seccion de Listados y Persistencia -->
-  <div class="card table-card">
-    <div class="card-header flex-header">
-      <div class="tabs">
-        <button class="tab-btn" [class.active]="tabActiva() === 'paradas'" (click)="cambiarTab('paradas')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          Paradas ({{ redService.totalParadas() }})
-        </button>
-        <button class="tab-btn" [class.active]="tabActiva() === 'tramos'" (click)="cambiarTab('tramos')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tab-icon">
-            <circle cx="6" cy="6" r="3"></circle>
-            <circle cx="18" cy="18" r="3"></circle>
-            <path d="M8.5 8.5l7 7"></path>
-          </svg>
-          Tramos ({{ redService.totalTramos() }})
-        </button>
+  <!-- Nuevo tramo -->
+  <fieldset class="gestor-form" [disabled]="!authService.isPlanificador()">
+    <legend>Nuevo tramo</legend>
+    <div class="form-row form-row-3">
+      <label class="campo" for="tramoOrigen">
+        Origen
+        <select id="tramoOrigen" class="control" [ngModel]="nuevoTramoOrigen()" (ngModelChange)="nuevoTramoOrigen.set($event)">
+          @for (p of redService.paradas(); track p.id) {
+            <option [value]="p.id">{{ p.id }} · {{ p.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="campo" for="tramoDestino">
+        Destino
+        <select id="tramoDestino" class="control" [ngModel]="nuevoTramoDestino()" (ngModelChange)="nuevoTramoDestino.set($event)">
+          @for (p of redService.paradas(); track p.id) {
+            <option [value]="p.id">{{ p.id }} · {{ p.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="campo" for="tramoPeso">
+        Minutos
+        <input id="tramoPeso" type="number" min="1" class="control"
+               [ngModel]="nuevoTramoPeso()" (ngModelChange)="nuevoTramoPeso.set($event)">
+      </label>
+    </div>
+    <div class="form-acciones">
+      <button type="button" class="btn btn-primary btn-sm" (click)="crearTramo()" [disabled]="redService.cargando()">
+        Guardar tramo
+      </button>
+    </div>
+  </fieldset>
+
+  <!-- Listado de paradas y tramos -->
+  <section class="listado" aria-label="Listado de la red">
+    <div class="listado-cabeza">
+      <div class="segmented" role="group" aria-label="Qué listar">
+        <button type="button" [class.active]="tabActiva() === 'paradas'" (click)="cambiarTab('paradas')">Paradas ({{ redService.totalParadas() }})</button>
+        <button type="button" [class.active]="tabActiva() === 'tramos'" (click)="cambiarTab('tramos')">Tramos ({{ redService.totalTramos() }})</button>
       </div>
-      <div class="header-actions">
-        <div class="red-selector-group">
-          <button class="btn btn-outline btn-sm" [class.btn-active-red]="redSeleccionada() === 1" (click)="cargarRedSeleccionada(1)" title="Cargar Red Urbana (40 paradas)">
-            Red 40
-          </button>
-          <button class="btn btn-outline btn-sm" [class.btn-active-red]="redSeleccionada() === 2" (click)="cargarRedSeleccionada(2)" title="Cargar Red Grande W-RQ-02 (400 paradas, 1.100 tramos)">
-            Red 400 (W-RQ-02)
-          </button>
-        </div>
-        <button class="btn btn-outline" (click)="recargarRed()" [disabled]="redService.cargando()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-          </svg>
-          Recargar Servidor
-        </button>
-        <button class="btn btn-toggle-table" (click)="toggleTabla()" title="Expandir o contraer listado">
-          <span>{{ tablaExpandida() ? 'Ocultar Listado' : 'Mostrar Listado' }}</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron-icon" [class.rotated]="tablaExpandida()">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-      </div>
+      <button type="button" class="btn btn-outline btn-sm btn-toggle-table" (click)="toggleTabla()" [attr.aria-expanded]="tablaExpandida()">
+        {{ tablaExpandida() ? 'Ocultar' : 'Mostrar' }}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" class="chevron-icon" [class.rotated]="tablaExpandida()">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
     </div>
 
     @if (tablaExpandida()) {
-      <div class="card-body collapsible-body">
+      <div class="listado-cuerpo entrar">
         @if (tabActiva() === 'paradas') {
-          <div class="filter-bar">
-            <div class="search-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input type="text" class="form-control search-input" placeholder="Filtrar por nombre o ID de estación..."
-                     [ngModel]="filtroParada()" (ngModelChange)="filtroParada.set($event)">
-            </div>
-          </div>
-
-          <div class="table-responsive">
+          <input type="search" class="control" placeholder="Buscar por nombre o ID…" aria-label="Buscar parada"
+                 [ngModel]="filtroParada()" (ngModelChange)="filtroParada.set($event)">
+          <div class="tabla-caja">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre de la Parada</th>
-                  <th>Coordenada X</th>
-                  <th>Coordenada Y</th>
-                </tr>
+                <tr><th scope="col">ID</th><th scope="col">Parada</th><th scope="col" class="num-col">x · y</th></tr>
               </thead>
               <tbody>
                 @for (parada of paradasFiltradas(); track parada.id) {
                   <tr>
-                    <td><span class="id-badge">{{ parada.id }}</span></td>
-                    <td class="font-bold text-highlight">{{ parada.nombre }}</td>
-                    <td class="font-mono">{{ parada.x }}</td>
-                    <td class="font-mono">{{ parada.y }}</td>
+                    <td class="num id">{{ parada.id }}</td>
+                    <td>{{ parada.nombre }}</td>
+                    <td class="num num-col muted">{{ parada.x }} · {{ parada.y }}</td>
                   </tr>
+                } @empty {
+                  <tr><td colspan="3" class="muted">Ninguna parada coincide con la búsqueda.</td></tr>
                 }
               </tbody>
             </table>
           </div>
         } @else {
-          <div class="table-responsive">
+          <div class="tabla-caja">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Origen</th>
-                  <th>Destino</th>
-                  <th>Peso</th>
-                  <th>Estado Vial</th>
-                  <th>Acción de Contingencia</th>
-                </tr>
+                <tr><th scope="col">ID</th><th scope="col">Tramo</th><th scope="col" class="num-col">Min</th><th scope="col"><span class="sr-only">Acción</span></th></tr>
               </thead>
               <tbody>
                 @for (tramo of redService.tramos(); track tramo.id) {
                   <tr [class.row-closed]="!tramo.abierto">
-                    <td><span class="id-badge">{{ tramo.id }}</span></td>
-                    <td>{{ getParadaNombre(tramo.origen) }}</td>
-                    <td>{{ getParadaNombre(tramo.destino) }}</td>
-                    <td><span class="weight-tag">{{ tramo.peso }} min</span></td>
+                    <td class="num id">{{ tramo.id }}</td>
                     <td>
-                      @if (tramo.abierto) {
-                        <span class="status-badge status-open">
-                          <span class="dot dot-open"></span> Abierto
-                        </span>
-                      } @else {
-                        <span class="status-badge status-closed">
-                          <span class="dot dot-closed"></span> En Mantenimiento
-                        </span>
+                      {{ getParadaNombre(tramo.origen) }} ↔ {{ getParadaNombre(tramo.destino) }}
+                      @if (!tramo.abierto) {
+                        <span class="estado-cierre">en cierre</span>
                       }
                     </td>
-                    <td>
-                      <button class="btn btn-sm" [class.btn-danger]="tramo.abierto" [class.btn-success]="!tramo.abierto"
+                    <td class="num num-col">{{ tramo.peso }}</td>
+                    <td class="accion">
+                      <button type="button" class="btn btn-sm btn-mini" [class.btn-danger]="tramo.abierto" [class.btn-success]="!tramo.abierto"
                               (click)="toggleEstadoTramo(tramo.id, tramo.abierto)"
                               [disabled]="!authService.isPlanificador()">
-                        {{ tramo.abierto ? 'Cerrar Tramo' : 'Reabrir Vía' }}
+                        {{ tramo.abierto ? 'Cerrar' : 'Reabrir' }}
                       </button>
                     </td>
                   </tr>
@@ -335,5 +188,5 @@
         }
       </div>
     }
-  </div>
+  </section>
 </div>
