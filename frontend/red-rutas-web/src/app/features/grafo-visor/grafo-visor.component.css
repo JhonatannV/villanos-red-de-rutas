@@ -528,3 +528,29 @@
 .traza-valor-actual text {
   fill: #ffffff;
 }
+
+/* Comparador de 2 rutas (RF-08 / SCRUM-33) */
+
+.tramo-comp-original {
+  stroke: #facc15 !important;
+  stroke-width: 6 !important;
+}
+
+.tramo-comp-alterna {
+  stroke: #e879f9 !important;
+  stroke-width: 6 !important;
+  filter: drop-shadow(0 0 4px rgba(232, 121, 249, 0.6));
+}
+
+.tramo-comp-ambas-encima {
+  stroke: #e879f9;
+  stroke-width: 6;
+  stroke-dasharray: 9, 9;
+  pointer-events: none;
+}
+
+.tramo-comp-cerrado {
+  stroke: #f43f5e !important;
+  stroke-width: 5 !important;
+  stroke-dasharray: 5, 5;
+}

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RedService } from '../../core/services/red.service';
 import { Parada, Tramo } from '../../core/models/red.model';
 import { ReproductorService } from '../../reproductor/reproductor.service';
+import { ComparadorService } from '../../reproductor/comparador/comparador.service';
 
 export interface EtiquetaPeso {
   tramoId: number;
@@ -28,6 +29,8 @@ export class GrafoVisorComponent {
   readonly redService = inject(RedService);
   // Estado del reproductor paso a paso (RF-04): qué pintar en cada paso
   readonly rep = inject(ReproductorService);
+  // Comparador de 2 rutas (RF-08): ruta original y ruta con un tramo cerrado
+  readonly comp = inject(ComparadorService);
 
   // Dimensiones base del lienzo SVG
   readonly BASE_WIDTH = 1200;
