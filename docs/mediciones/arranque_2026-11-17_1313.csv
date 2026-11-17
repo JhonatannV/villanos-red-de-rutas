@@ -1,0 +1,2 @@
+fecha,escenario,build_s,up_s,keycloak_s,grafo_s,ruta_s,gateway_s,frontend_sano_s,token_s,primera_ruta_s,frontend_200_s,costo,cumple_90s
+2026-11-17_1313,imagenes construidas sin contenedores ni volumenes,—,3.1,44.6,31.5,7.9,15.6,3.1,44.6,44.6,0.1,46,SI
