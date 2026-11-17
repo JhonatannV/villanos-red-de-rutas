@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+# =========================================================================
+# SCRUM-37 [RN-BENCH] Banco C vs. Java con 1.000 rutas
+#
+# Mismo compilador y flags que la imagen de produccion (Alpine, gcc -O2) y
+# Java 21. Se construye con el contexto en backend/ para incluir la red real
+# de 400 paradas de grafo-service:
+#
+#   docker build -f ruta-service/Dockerfile.banco -t villanos-banco backend
+#   docker run --rm --cpus=1.5 --memory=512m -v <carpeta>:/salida villanos-banco
+#
+# (los limites --cpus y --memory son los de ruta-service en docker-compose.yml)
+# =========================================================================
+FROM maven:3.9-eclipse-temurin-21-alpine
+
+RUN apk add --no-cache build-base
+
+WORKDIR /banco
+COPY ruta-service/pom.xml ./
+COPY ruta-service/native ./native
+RUN gcc -Wall -Wextra -O2 -std=c11 -shared -fPIC -o /usr/lib/libgrafo.so native/dijkstra.c \
+ && gcc -Wall -Wextra -O2 -std=c11 -o /usr/local/bin/banco_c native/banco_c.c native/dijkstra.c
+
+COPY ruta-service/src ./src
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -q -B test-compile \
+ && mvn -q -B dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmdep.includeScope=test \
+ && mkdir -p lib && tr ':' '\n' < cp.txt | xargs -I{} cp {} lib/
+
+COPY grafo-service/data/grafo_400_paradas.json ./
+
+ENTRYPOINT ["java", "-Djna.library.path=/usr/lib", "-cp", "target/classes:target/test-classes:lib/*", \
+            "com.villanos.ruta.banco.BancoCvsJava", "grafo_400_paradas.json", "/salida", "/usr/local/bin/banco_c"]

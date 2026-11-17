@@ -1,0 +1,15 @@
+SCRUM-37 [RN-BENCH] - Banco C vs. Java
+1000 consultas por red, 6 corridas (se descarta la 1.a), mediana por consulta
+Java 21.0.12.1 (OpenJDK 64-Bit Server VM), 2 procesadores visibles, Linux amd64
+
+Red                        Paradas  Tramos     C puro    C por JNA       Java    Java/C     JNA/C   Caminos=
+Red real 400 (redId 2)         400    1100      42.93        59.73      95.34      2.2x      1.4x  1000/1000
+Generada 50                     50     138       2.96        19.69       8.50      2.9x      6.7x  1000/1000
+Generada 150                   150     413      18.61        47.53      38.43      2.1x      2.6x  1000/1000
+Generada 400                   400    1100      71.79        71.42     126.13      1.8x      1.0x  1000/1000
+Generada 1000                 1000    2750     109.05       122.87     354.09      3.2x      1.1x  1000/1000
+Generada 2000                 2000    5500     229.71       317.76     664.23      2.9x      1.4x  1000/1000
+Generada 4000                 4000   11000     521.76       766.66    1372.09      2.6x      1.5x  1000/1000
+
+Tiempos en microsegundos por consulta. Caminos= : consultas en que C y Java dan el mismo camino
+(el costo coincide en todas; si no, el banco se detiene).
