@@ -2,6 +2,7 @@ import { Component, HostListener, OnDestroy, computed, effect, inject, signal, u
 import { RedService } from '../core/services/red.service';
 import { ReproductorService } from './reproductor.service';
 import { AlgoritmoTraza, Velocidad } from './traza.model';
+import { crearArchivoTraza, leerArchivoTraza, mayorParada, nombreArchivoTraza } from './traza-archivo';
 
 /**
  * Reproductor paso a paso tipo VCR (RF-04 / SCRUM-31): pide la traza a ruta-service
@@ -39,6 +40,9 @@ export class ReproductorComponent implements OnDestroy {
     }
     return m;
   });
+
+  /** Resultado de la última exportación o importación (SCRUM-34). */
+  readonly avisoArchivo = signal<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
 
   readonly mismaParada = computed(() => this.algoritmo() === 'dijkstra' && this.desde() === this.hasta());
 
@@ -102,6 +106,62 @@ export class ReproductorComponent implements OnDestroy {
       hasta: this.algoritmo() === 'dijkstra' ? this.hasta() : null,
       redId: this.redId()
     }, id => this.nombre(id)).subscribe({ error: () => { /* el mensaje queda en rep.error() */ } });
+  }
+
+  /* ---------- Exportar e importar la traza en JSON (RF-09 / SCRUM-34) ---------- */
+
+  exportar(): void {
+    const traza = this.rep.traza();
+    if (!traza) {
+      return;
+    }
+    const archivo = crearArchivoTraza(traza, {
+      nombre: this.redService.redActual()?.nombre,
+      paradas: this.redService.totalParadas()
+    });
+    const blob = new Blob([JSON.stringify(archivo, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = nombreArchivoTraza(traza);
+    enlace.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    this.avisoArchivo.set({ tipo: 'ok', texto: `Traza exportada como ${enlace.download} (${traza.pasos.length} pasos).` });
+  }
+
+  async importar(evento: Event): Promise<void> {
+    const input = evento.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    input.value = '';
+    if (!archivo) {
+      return;
+    }
+    try {
+      this.cargarArchivo(await archivo.text(), archivo.name);
+    } catch (e) {
+      this.avisoArchivo.set({ tipo: 'error', texto: (e as Error).message });
+    }
+  }
+
+  /** Valida el JSON y lo carga en el reproductor sin consultar al backend. */
+  cargarArchivo(texto: string, nombreArchivo: string): void {
+    const leido = leerArchivoTraza(texto);
+    const traza = leido.traza;
+    const total = this.redService.totalParadas();
+    if (mayorParada(traza) >= total) {
+      throw new Error(`La traza usa la parada ${mayorParada(traza)}, pero la red cargada solo tiene ${total} paradas.`);
+    }
+    this.rep.cargarTraza(traza);
+    this.algoritmo.set(traza.algoritmo);
+    this.desde.set(traza.desde);
+    if (traza.hasta !== null) {
+      this.hasta.set(traza.hasta);
+    }
+    const otraRed = traza.redId !== this.redId() ? ` Ojo: se exportó desde la red ${traza.redId}.` : '';
+    this.avisoArchivo.set({
+      tipo: 'ok',
+      texto: `Traza importada de ${nombreArchivo}: ${traza.pasos.length} pasos, sin consultar al servidor.${otraRed}`
+    });
   }
 
   moverA(valor: string): void {

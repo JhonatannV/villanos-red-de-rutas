@@ -4,7 +4,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ReproductorComponent } from './reproductor.component';
 import { ReproductorService } from './reproductor.service';
 import { RedService } from '../core/services/red.service';
-import { RUTA_GUIA, NOMBRES_GUIA } from './traza.fixtures';
+import { RUTA_GUIA, NOMBRES_GUIA, nombreGuia } from './traza.fixtures';
+import { construirTrazaDijkstra } from './traza.builder';
+import { crearArchivoTraza } from './traza-archivo';
 
 describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
   let fixture: ComponentFixture<ReproductorComponent>;
@@ -110,6 +112,45 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
     expect(el.querySelector('.rep-degradado')).toBeNull();
     expect(el.querySelector('.rep-recuperado')?.textContent).toContain('volvió a responder');
     expect(el.querySelector('.vcr-contador')?.textContent).toContain('Paso 0 de 5');
+  });
+
+  it('importar un JSON reproduce la traza paso a paso sin consultar al backend', () => {
+    const archivo = crearArchivoTraza(construirTrazaDijkstra(RUTA_GUIA, nombreGuia), { paradas: 5 });
+    fixture.componentInstance.cargarArchivo(JSON.stringify(archivo), 'traza.json');
+    fixture.detectChanges();
+
+    expect(el.querySelector('.rep-archivo')?.textContent).toContain('sin consultar al servidor');
+    expect(el.querySelector('.vcr-contador')?.textContent).toContain('Paso 0 de 5');
+    rep.irFin();
+    fixture.detectChanges();
+    expect(el.querySelector('.resultado')?.textContent).toContain('11 min');
+    http.expectNone(() => true);
+  });
+
+  it('no importa una traza que usa paradas que la red cargada no tiene', () => {
+    const red = TestBed.inject(RedService);
+    red.paradas.set(red.paradas().slice(0, 3));
+    fixture.detectChanges();
+    const archivo = crearArchivoTraza(construirTrazaDijkstra(RUTA_GUIA, nombreGuia), { paradas: 5 });
+    expect(() => fixture.componentInstance.cargarArchivo(JSON.stringify(archivo), 'traza.json'))
+      .toThrow('solo tiene 3 paradas');
+    expect(rep.traza()).toBeNull();
+  });
+
+  it('exportar descarga la traza actual como archivo JSON', () => {
+    calcularGuia();
+    const crear = vi.fn(() => 'blob:traza');
+    const revocar = vi.fn();
+    Object.assign(URL, { createObjectURL: crear, revokeObjectURL: revocar });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+    boton('Exportar JSON').click();
+    fixture.detectChanges();
+
+    expect(crear).toHaveBeenCalledTimes(1);
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(el.querySelector('.rep-archivo')?.textContent).toMatch(/traza-dijkstra-0-4-.*\.json \(6 pasos\)/);
+    click.mockRestore();
   });
 
   it('las flechas del teclado avanzan y retroceden', () => {
