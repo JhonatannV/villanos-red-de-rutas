@@ -50,8 +50,25 @@
           {{ algoritmo() === 'dijkstra' ? 'Calcular ruta' : 'Recorrer red' }}
         }
       </button>
+
+      <label class="btn btn-outline btn-archivo" title="Cargar una traza exportada antes (no consulta al servidor)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Importar JSON
+        <input type="file" accept="application/json,.json" (change)="importar($event)" aria-label="Importar traza en JSON" />
+      </label>
     </div>
   </header>
+
+  @if (avisoArchivo(); as aviso) {
+    <div class="rep-archivo" [class.rep-archivo-error]="aviso.tipo === 'error'" role="status">
+      <span>{{ aviso.texto }}</span>
+      <button type="button" class="cerrar" (click)="avisoArchivo.set(null)" aria-label="Cerrar aviso">×</button>
+    </div>
+  }
 
   @if (mismaParada()) {
     <p class="rep-aviso">Elige un destino distinto del origen.</p>
@@ -150,6 +167,11 @@
                (input)="moverA($any($event.target).value)" aria-label="Línea de tiempo de la traza" />
         <span class="vcr-contador">Paso {{ rep.indice() }} de {{ rep.totalPasos() - 1 }}</span>
       </div>
+
+      <button type="button" class="vcr-btn" (click)="exportar()" title="Descargar la traza completa en JSON">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Exportar JSON</span>
+      </button>
 
       <div class="segmented segmented-sm" role="group" aria-label="Velocidad">
         @for (v of velocidades; track v) {

@@ -606,3 +606,52 @@ kbd {
   line-height: 1;
   cursor: pointer;
 }
+
+/* ---------- Exportar e importar (RF-09 / SCRUM-34) ---------- */
+
+.btn-archivo {
+  position: relative;
+  cursor: pointer;
+}
+
+.btn-archivo input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-archivo:focus-within {
+  outline: 2px solid var(--brand-sky);
+  outline-offset: 2px;
+}
+
+.rep-archivo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #bae6fd;
+  font-size: 0.84rem;
+}
+
+.rep-archivo-error {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #fecdd3;
+}
+
+.rep-archivo .cerrar {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
