@@ -47,4 +47,4 @@ Siguiendo rigurosamente el estándar formal de cinco pasos propuesto por Bass, C
 | **W-RQ-03** | Latencia Gateway en red 400x1100 | $p95 < 400\text{ ms}$ en 20 consultas; ratio traza $< 2.0\times$ | **$p95 = 77.14\text{ ms}$**, ratio **1.07x** | ✅ CUMPLE |
 | **A-RQ-01** | Eficiencia algorítmica Dijkstra en C | Montículo binario $O(E \log V)$; $p95 < 400\text{ ms}$; paridad | C **42,9 µs**, JNA **59,7 µs**, Java **95,3 µs** (SCRUM-37); paridad 1.000/1.000 | ✅ CUMPLE |
 | **A-RQ-02** | Testabilidad y sanidad de memoria en C | Suite desacoplada $< 30\text{ s}$; 0 fugas Valgrind | **38 pruebas en 0.30 s**; **0 leaks / 0 errors** | ✅ CUMPLE |
-| **A-RQ-03** | Despliegue orquestado con límites de recursos | Arranque $< 90\text{ s}$; frontend $< 250\text{ MB}$; límites CPU/RAM | Arranque en **32.8 s**; imagen **28.4 MB**; límites 5.5 CPU/2.75 GB | ✅ CUMPLE |
+| **A-RQ-03** | Despliegue orquestado con límites de recursos | Arranque $< 90\text{ s}$; frontend $< 250\text{ MB}$; límites CPU/RAM | Primera ruta en **44,1–44,7 s** (SCRUM-39); imagen **74,3 MB**; límites 5.5 CPU/2.75 GB | ✅ CUMPLE |

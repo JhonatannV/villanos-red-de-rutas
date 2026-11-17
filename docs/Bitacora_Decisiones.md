@@ -28,6 +28,7 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-16](#d-16) | Orquestación dual Docker Compose v2 y Kubernetes con límites de CPU/RAM | Tomada y verificada |
 | [D-17](#d-17) | La traza del reproductor la arma Java y se pide aparte con `traza=true` | Tomada |
 | [D-18](#d-18) | El reproductor guarda una foto del estado por paso y solo mueve un índice | Tomada |
+| [D-19](#d-19) | Los servicios arrancan en paralelo: se espera a que inicien, no a que estén sanos | Tomada y medida |
 | — | Consolidación y cierre de decisiones abiertas iniciales | [Consolidadas al 100 %](#cierre-de-decisiones-abiertas) |
 
 ---
@@ -230,6 +231,17 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 | Requisito de calidad | **RF-04** y **A-RQ-02 Testabilidad**: cada foto se compara en pruebas y retroceder devuelve el mismo objeto que se mostró antes (`reproductor.service.spec.ts`). **W-RQ-02 Desempeño en el navegador**: moverse a cualquier paso es O(1). |
 | Qué se pierde | Memoria en el navegador: con la red de 40 paradas son 41 fotos de hasta 40 filas; en el peor caso de la red de 400 paradas serían unas 400 fotos de hasta 400 filas (160.000 filas). |
 | Fecha y quién | 17 nov 2026 · Santiago (SCRUM-31). |
+
+### D-19
+**En `docker-compose.yml` cada servicio espera a que sus dependencias inicien (`service_started`), no a que estén sanas (`service_healthy`). Mientras arrancan, la salud se revisa cada 2 s (`start_interval`).**
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Mantener la cadena `keycloak → grafo-service → ruta-service → api-gateway → frontend`, esperando a que cada eslabón esté sano. (b) Mantener la cadena y solo bajar el `interval` de los healthchecks a 2 s también durante la operación normal. |
+| Por qué se descartaron | (a) Medido con `scripts/arranque_limpio.sh`: la primera ruta tardaba **108,8 s** y no cumplía los 90 s. Además, la cadena no protege nada: los servicios piden las claves de Keycloak (`jwk-set-uri`) con el primer token, `ruta-service` pide la red en cada consulta y el gateway responde 503 mientras un servicio no contesta (W-RQ-01). (b) Revisar cada 2 s todo el tiempo gasta CPU sin necesidad; `start_interval` solo aplica mientras el contenedor arranca. |
+| Requisito de calidad | **A-RQ-03 / DEPLOY-02**: primera ruta en menos de 90 s desde una máquina sin contenedores. Con el cambio, **44,1 a 44,7 s** en tres corridas. El camino crítico pasa a ser el arranque de Keycloak. |
+| Qué se pierde | Durante los primeros segundos una consulta puede llegar antes de que su servicio esté listo. En ese caso recibe 503 en vez de esperar, y el frontend lo muestra como modo degradado (SCRUM-32). |
+| Fecha y quién | 17 nov 2026 · Santiago (SCRUM-39). |
 
 ---
 

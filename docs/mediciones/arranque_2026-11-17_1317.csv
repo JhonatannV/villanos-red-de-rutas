@@ -1,0 +1,2 @@
+fecha,escenario,build_s,up_s,keycloak_s,grafo_s,ruta_s,gateway_s,frontend_sano_s,token_s,primera_ruta_s,frontend_200_s,costo,cumple_90s
+2026-11-17_1317,desde cero (build sin cache),75.1,3.6,49.9,22.0,10.8,14.8,3.6,46.9,46.9,0.1,46,SI
