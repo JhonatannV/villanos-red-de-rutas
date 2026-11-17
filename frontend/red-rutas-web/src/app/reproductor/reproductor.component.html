@@ -57,6 +57,47 @@
     <p class="rep-aviso">Elige un destino distinto del origen.</p>
   }
 
+  @if (rep.degradado(); as caida) {
+    <div class="rep-degradado" role="alert" aria-live="assertive">
+      <div class="degradado-icono" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div class="degradado-texto">
+        <strong>Modo degradado: el cálculo de rutas no está disponible</strong>
+        <span>{{ caida.mensaje }} <code>{{ caida.servicio }} · {{ caida.motivo }}</code></span>
+        <span class="degradado-ok">
+          El mapa y la red siguen funcionando.
+          @if (rep.traza()) {
+            La traza anterior se puede seguir reproduciendo.
+          }
+        </span>
+      </div>
+      <div class="degradado-acciones">
+        <button type="button" class="btn btn-primary btn-sm" (click)="rep.reintentar()" [disabled]="rep.cargando()">
+          @if (rep.cargando()) {
+            <span class="spinner" aria-hidden="true"></span> Reintentando…
+          } @else {
+            Reintentar
+          }
+        </button>
+        @if (rep.reintentoEn() !== null && !rep.cargando()) {
+          <span class="degradado-cuenta">Reintento automático en {{ rep.reintentoEn() }} s · intento {{ caida.intentos }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (rep.recuperado(); as aviso) {
+    <div class="rep-recuperado" role="status">
+      <span>{{ aviso }}</span>
+      <button type="button" class="cerrar" (click)="rep.recuperado.set(null)" aria-label="Cerrar aviso">×</button>
+    </div>
+  }
+
   @if (rep.error(); as error) {
     <div class="rep-error" role="alert">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
@@ -215,7 +256,7 @@
         </table>
       </div>
     </div>
-  } @else if (!rep.error()) {
+  } @else if (!rep.error() && !rep.degradado()) {
     <p class="rep-vacio">
       Elige un algoritmo y las paradas, y pulsa <strong>{{ algoritmo() === 'dijkstra' ? 'Calcular ruta' : 'Recorrer red' }}</strong>.
       Después puedes avanzar, retroceder o reproducir la traza sobre el mapa. Atajos: <kbd>←</kbd> <kbd>→</kbd> y <kbd>espacio</kbd>.

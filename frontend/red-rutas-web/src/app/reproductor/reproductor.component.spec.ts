@@ -30,7 +30,7 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
   });
 
   afterEach(() => {
-    rep.pausar();
+    rep.limpiar();
     http.verify();
   });
 
@@ -86,6 +86,30 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
     fixture.detectChanges();
     expect(boton('Calcular ruta').disabled).toBe(true);
     expect(el.querySelector('.rep-aviso')).toBeTruthy();
+  });
+
+  it('con ruta-service caído muestra el aviso, el botón Reintentar y no se queda cargando', () => {
+    fixture.componentInstance.hasta.set(4);
+    boton('Calcular ruta').click();
+    http.expectOne(r => r.url.endsWith('/api/rutas/calcular')).flush(
+      { servicio: 'ruta-service', motivo: 'TIMEOUT', mensaje: 'El microservicio ruta-service excedio el tiempo limite.' },
+      { status: 503, statusText: 'Service Unavailable' }
+    );
+    fixture.detectChanges();
+
+    const aviso = el.querySelector('.rep-degradado')?.textContent ?? '';
+    expect(aviso).toContain('Modo degradado');
+    expect(aviso).toContain('El mapa y la red siguen funcionando');
+    expect(aviso).toContain('Reintento automático en 10 s');
+    expect(boton('Reintentar').disabled).toBe(false);
+    expect(el.querySelector('.spinner')).toBeNull();
+
+    boton('Reintentar').click();
+    http.expectOne(r => r.url.endsWith('/api/rutas/calcular')).flush(RUTA_GUIA);
+    fixture.detectChanges();
+    expect(el.querySelector('.rep-degradado')).toBeNull();
+    expect(el.querySelector('.rep-recuperado')?.textContent).toContain('volvió a responder');
+    expect(el.querySelector('.vcr-contador')?.textContent).toContain('Paso 0 de 5');
   });
 
   it('las flechas del teclado avanzan y retroceden', () => {
