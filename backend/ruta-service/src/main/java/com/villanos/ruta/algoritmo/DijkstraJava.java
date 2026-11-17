@@ -9,7 +9,7 @@ import java.util.PriorityQueue;
 
 public class DijkstraJava {
 
-    // Guarda cada paso cerrado para la futura animacion en Angular (RF-04)
+    // Orden en que se cierran las paradas (resumen de la traza)
     public static class PasoAlgoritmo {
         public final int nodo;
         public final int distancia;
@@ -25,16 +25,65 @@ public class DijkstraJava {
         }
     }
 
+    /**
+     * Revisión de un vecino al cerrar una parada (RF-04).
+     * {@code anterior} es null cuando el vecino aún tenía distancia infinita.
+     */
+    public static class Relajacion {
+        public final int vecino;
+        public final int peso;
+        public final Integer anterior;
+        public final int propuesta;
+        public final boolean mejora;
+
+        public Relajacion(int vecino, int peso, Integer anterior, int propuesta, boolean mejora) {
+            this.vecino = vecino;
+            this.peso = peso;
+            this.anterior = anterior;
+            this.propuesta = propuesta;
+            this.mejora = mejora;
+        }
+    }
+
+    /**
+     * Un paso del algoritmo: la parada que sale de la cola y se cierra, desde cuál se
+     * llegó y qué pasó con cada vecino todavía abierto. Con la lista de pasos el
+     * reproductor reconstruye el estado completo en cualquier instante.
+     */
+    public static class PasoTraza {
+        public final int paso;
+        public final int actual;
+        public final int distancia;
+        public final int desde;
+        public final List<Relajacion> relajaciones;
+
+        public PasoTraza(int paso, int actual, int distancia, int desde, List<Relajacion> relajaciones) {
+            this.paso = paso;
+            this.actual = actual;
+            this.distancia = distancia;
+            this.desde = desde;
+            this.relajaciones = relajaciones;
+        }
+    }
+
     // Empaqueta la respuesta completa de una consulta de ruta
     public static class ResultadoRuta {
         public final int costoTotal;
         public final List<Integer> camino;
         public final List<PasoAlgoritmo> nodosCerrados;
+        /** Traza detallada para el reproductor; vacía cuando el cálculo lo hizo C. */
+        public final List<PasoTraza> pasos;
 
         public ResultadoRuta(int costoTotal, List<Integer> camino, List<PasoAlgoritmo> nodosCerrados) {
+            this(costoTotal, camino, nodosCerrados, Collections.emptyList());
+        }
+
+        public ResultadoRuta(int costoTotal, List<Integer> camino, List<PasoAlgoritmo> nodosCerrados,
+                             List<PasoTraza> pasos) {
             this.costoTotal = costoTotal;
             this.camino = camino;
             this.nodosCerrados = nodosCerrados;
+            this.pasos = pasos;
         }
     }
 
@@ -88,7 +137,9 @@ public class DijkstraJava {
         if (paradaInicio == paradaFin) {
             List<Integer> caminoUnico = Collections.singletonList(paradaInicio);
             List<PasoAlgoritmo> pasoUnico = Collections.singletonList(new PasoAlgoritmo(paradaInicio, 0));
-            return new ResultadoRuta(0, caminoUnico, pasoUnico);
+            List<PasoTraza> trazaUnica = Collections.singletonList(
+                    new PasoTraza(1, paradaInicio, 0, -1, Collections.emptyList()));
+            return new ResultadoRuta(0, caminoUnico, pasoUnico, trazaUnica);
         }
 
         // 3. Construir la Lista de Adyacencia a partir de los 3 arreglos paralelos
@@ -128,6 +179,7 @@ public class DijkstraJava {
         cola.add(new EstadoNodo(paradaInicio, 0, 1));
 
         List<PasoAlgoritmo> nodosCerrados = new ArrayList<>();
+        List<PasoTraza> pasos = new ArrayList<>();
 
         // 5. Bucle principal de exploracion
         while (!cola.isEmpty()) {
@@ -142,10 +194,12 @@ public class DijkstraJava {
             nodosCerrados.add(new PasoAlgoritmo(u, distancias[u]));
 
             if (u == paradaFin) {
+                pasos.add(new PasoTraza(pasos.size() + 1, u, distancias[u], previos[u], Collections.emptyList()));
                 break;
             }
 
             // 6. Relajacion de vecinos
+            List<Relajacion> relajaciones = new ArrayList<>();
             for (Arista arista : grafo.get(u)) {
                 int v = arista.destino;
                 if (cerrados[v]) {
@@ -154,20 +208,25 @@ public class DijkstraJava {
 
                 int nuevaDistancia = distancias[u] + arista.peso;
                 int nuevasParadas = cantidadParadas[u] + 1;
+                Integer anterior = distancias[v] == Integer.MAX_VALUE ? null : distancias[v];
 
-                if (nuevaDistancia < distancias[v]
-                        || (nuevaDistancia == distancias[v] && nuevasParadas < cantidadParadas[v])) {
+                boolean mejora = nuevaDistancia < distancias[v]
+                        || (nuevaDistancia == distancias[v] && nuevasParadas < cantidadParadas[v]);
+                if (mejora) {
                     distancias[v] = nuevaDistancia;
                     cantidadParadas[v] = nuevasParadas;
                     previos[v] = u;
                     cola.add(new EstadoNodo(v, nuevaDistancia, nuevasParadas));
                 }
+                relajaciones.add(new Relajacion(v, arista.peso, anterior, nuevaDistancia, mejora));
             }
+            pasos.add(new PasoTraza(pasos.size() + 1, u, distancias[u], previos[u],
+                    Collections.unmodifiableList(relajaciones)));
         }
 
         // 7. Si paradaFin quedo en infinito, significa que es inalcanzable (-1)
         if (distancias[paradaFin] == Integer.MAX_VALUE) {
-            return new ResultadoRuta(-1, Collections.emptyList(), nodosCerrados);
+            return new ResultadoRuta(-1, Collections.emptyList(), nodosCerrados, pasos);
         }
 
         // 8. Reconstruir el camino caminando hacia atras usando el arreglo previos
@@ -177,7 +236,7 @@ public class DijkstraJava {
         }
         Collections.reverse(camino);
 
-        return new ResultadoRuta(distancias[paradaFin], camino, nodosCerrados);
+        return new ResultadoRuta(distancias[paradaFin], camino, nodosCerrados, pasos);
     }
 
     // Prueba rapida en consola con el grafo guia (A=0, B=1, C=2, D=3, E=4)

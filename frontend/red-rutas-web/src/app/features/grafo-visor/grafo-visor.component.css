@@ -446,3 +446,85 @@
   color: #38bdf8;
   font-family: var(--font-mono, monospace);
 }
+
+/* =========================================================
+   Reproductor paso a paso (RF-04 / SCRUM-31)
+   ========================================================= */
+
+.tramo-traza-arbol {
+  stroke: rgba(16, 185, 129, 0.75) !important;
+  stroke-width: 3.2 !important;
+}
+
+.tramo-traza-evaluado {
+  stroke: #f97316 !important;
+  stroke-width: 3.6 !important;
+  stroke-dasharray: 7, 5;
+}
+
+.tramo-traza-camino {
+  stroke: #facc15 !important;
+  stroke-width: 5.5 !important;
+  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6));
+}
+
+.node-traza-frontera {
+  fill: #0b1329 !important;
+  stroke: #38bdf8 !important;
+  stroke-width: 3 !important;
+}
+
+.node-traza-cerrada {
+  fill: #059669 !important;
+  stroke: #a7f3d0 !important;
+}
+
+.node-traza-actual {
+  fill: #f97316 !important;
+  stroke: #ffffff !important;
+  stroke-width: 3.5 !important;
+}
+
+.node-traza-camino {
+  stroke: #facc15 !important;
+  stroke-width: 4 !important;
+}
+
+.halo-traza-actual {
+  stroke: #f97316;
+  stroke-width: 3;
+  fill: rgba(249, 115, 22, 0.12);
+  animation: pulso-actual 1.2s ease-in-out infinite;
+}
+
+@keyframes pulso-actual {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo-traza-actual { animation: none; }
+}
+
+.traza-valor rect {
+  fill: #0b1329;
+  stroke: rgba(56, 189, 248, 0.6);
+  stroke-width: 1;
+}
+
+.traza-valor text {
+  fill: #e0f2fe;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.traza-valor-actual rect {
+  fill: #f97316;
+  stroke: #ffffff;
+}
+
+.traza-valor-actual text {
+  fill: #ffffff;
+}

@@ -2,6 +2,7 @@ import { Component, HostListener, computed, inject, signal } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { RedService } from '../../core/services/red.service';
 import { Parada, Tramo } from '../../core/models/red.model';
+import { ReproductorService } from '../../reproductor/reproductor.service';
 
 export interface EtiquetaPeso {
   tramoId: number;
@@ -25,6 +26,8 @@ export interface VecinoConexion {
 })
 export class GrafoVisorComponent {
   readonly redService = inject(RedService);
+  // Estado del reproductor paso a paso (RF-04): qué pintar en cada paso
+  readonly rep = inject(ReproductorService);
 
   // Dimensiones base del lienzo SVG
   readonly BASE_WIDTH = 1200;

@@ -26,6 +26,8 @@ Los requisitos de calidad usan los prefijos del documento ADD:
 | [D-14](#d-14) | Spatial Hash Grid O(M) para renderizado de red masiva (400x1100) | Tomada y medida |
 | [D-15](#d-15) | Connection Pooling en API Gateway para latencia p95 < 400 ms | Tomada y medida |
 | [D-16](#d-16) | Orquestación dual Docker Compose v2 y Kubernetes con límites de CPU/RAM | Tomada y verificada |
+| [D-17](#d-17) | La traza del reproductor la arma Java y se pide aparte con `traza=true` | Tomada |
+| [D-18](#d-18) | El reproductor guarda una foto del estado por paso y solo mueve un índice | Tomada |
 | — | Consolidación y cierre de decisiones abiertas iniciales | [Consolidadas al 100 %](#cierre-de-decisiones-abiertas) |
 
 ---
@@ -206,6 +208,28 @@ La red se representa como lista de adyacencia compacta**, tanto en `dijkstra.c` 
 | Requisito de calidad | **A-RQ-03 y DEPLOY-01 Facilidad de Despliegue y Disponibilidad**: Se provee un comando único `docker compose up -d` para entornos locales y `kubectl apply -k k8s/` con Kustomize para clústeres. Cada uno de los 5 contenedores tiene definidos sus límites máximos (total ecosistema: 5.5 CPUs y 2.75 GB RAM) y reservas mínimas (1.35 CPUs y 1.31 GB RAM), garantizando un despliegue predecible y seguro. |
 | Qué se pierde | Se requiere mantener sincronizada la definición de puertos y variables de entorno entre `docker-compose.yml` y los manifiestos YAML de Kubernetes. |
 | Fecha y quién | 15 nov 2026 · Jhonatan (SCRUM-38). |
+
+### D-17
+**La traza paso a paso de Dijkstra (RF-04) la arma `DijkstraJava` y solo se entrega cuando el cliente la pide con `GET /api/rutas/calcular?...&traza=true`.** El camino y el costo siguen saliendo de `libgrafo.so` en modo `native`.
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Agregar a `libgrafo.so` una segunda función que llene también la traza. (b) Mandar la traza en todas las respuestas de `/calcular`. (c) Recalcular la traza en el frontend. |
+| Por qué se descartaron | (a) La traza tiene tamaño variable (cada paso trae una lista de vecinos revisados): exigiría reservar y liberar estructuras anidadas a través de JNA, cambiar la firma congelada de `grafo.h` (D-08) y volver a pasar Valgrind, para algo que no está en la ruta crítica que se mide. (b) Las consultas sin reproductor (mediciones, comparador) pagarían un JSON más grande sin usarlo. (c) El enunciado no permite lógica de grafos en el frontend. |
+| Requisito de calidad | **A-RQ-01 Desempeño**: el cálculo medido sigue en C. **W-RQ-03 Latencia**: la traza es opcional y solo la pide el reproductor. **A-RQ-02 Testabilidad**: la traza se verifica con JUnit contra la traza a mano del grafo guía (`TrazaDijkstraTest`). |
+| Qué se pierde | En modo `native` con `traza=true` el recorrido se calcula dos veces (C para el camino, Java para la traza). Que coincidan lo garantiza la misma regla de desempate (D-06), y la respuesta lo declara con `trazaCalculadaCon: "JAVA"`. |
+| Fecha y quién | 17 nov 2026 · Santiago (SCRUM-31). |
+
+### D-18
+**El reproductor convierte la traza en una lista de fotos completas del estado (una por paso) y avanzar o retroceder solo cambia un índice.**
+
+| Campo | Contenido |
+|---|---|
+| Alternativas descartadas | (a) Aplicar o deshacer el paso sobre un único estado mutable. (b) Volver a correr el algoritmo desde el inicio hasta el paso pedido. |
+| Por qué se descartaron | (a) Deshacer obliga a guardar qué había antes de cada cambio; un error ahí rompe justo el criterio de RF-04 ("retroceder deja el estado exactamente como estaba"). (b) Exige lógica de grafos en el frontend y crece con el número de paso. |
+| Requisito de calidad | **RF-04** y **A-RQ-02 Testabilidad**: cada foto se compara en pruebas y retroceder devuelve el mismo objeto que se mostró antes (`reproductor.service.spec.ts`). **W-RQ-02 Desempeño en el navegador**: moverse a cualquier paso es O(1). |
+| Qué se pierde | Memoria en el navegador: con la red de 40 paradas son 41 fotos de hasta 40 filas; en el peor caso de la red de 400 paradas serían unas 400 fotos de hasta 400 filas (160.000 filas). |
+| Fecha y quién | 17 nov 2026 · Santiago (SCRUM-31). |
 
 ---
 
