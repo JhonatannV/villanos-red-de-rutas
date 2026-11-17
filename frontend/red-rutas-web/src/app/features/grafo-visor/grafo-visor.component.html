@@ -93,7 +93,8 @@
           @let c1 = getCoordenadaParada(tramo.origen);
           @let c2 = getCoordenadaParada(tramo.destino);
           @let conectado = esTramoConectado(tramo);
-          @let traza = tramo.abierto ? rep.claseTramo(tramo.origen, tramo.destino) : null;
+          @let comparada = tramo.abierto ? comp.claseTramo(tramo) : null;
+          @let traza = tramo.abierto && !comp.activo() ? rep.claseTramo(tramo.origen, tramo.destino) : null;
 
           <line [attr.x1]="c1.x"
                 [attr.y1]="c1.y"
@@ -105,7 +106,14 @@
                 [class.tramo-highlight]="conectado"
                 [class.tramo-traza-arbol]="traza === 'arbol'"
                 [class.tramo-traza-evaluado]="traza === 'evaluado'"
-                [class.tramo-traza-camino]="traza === 'camino'" />
+                [class.tramo-traza-camino]="traza === 'camino'"
+                [class.tramo-comp-original]="comparada === 'original' || comparada === 'ambas'"
+                [class.tramo-comp-alterna]="comparada === 'alterna'"
+                [class.tramo-comp-cerrado]="comparada === 'cerrado'" />
+          @if (comparada === 'ambas') {
+            <line [attr.x1]="c1.x" [attr.y1]="c1.y" [attr.x2]="c2.x" [attr.y2]="c2.y"
+                  class="tramo-line tramo-comp-ambas-encima" />
+          }
         }
       </g>
 

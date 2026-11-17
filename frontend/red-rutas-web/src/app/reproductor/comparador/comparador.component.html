@@ -1,0 +1,78 @@
+@if (original(); as o) {
+  <section class="comp" aria-labelledby="comp-titulo">
+    <div class="comp-header">
+      <div>
+        <h4 id="comp-titulo">Comparar con un tramo cerrado</h4>
+        <span class="comp-sub">RF-08 &middot; ¿Qué pasa con esta ruta si se cierra un tramo?</span>
+      </div>
+      <div class="comp-controles">
+        <select [value]="tramoElegido() ?? ''" (change)="elegir($any($event.target).value)" aria-label="Tramo a cerrar">
+          @if (opciones().enRuta.length) {
+            <optgroup label="Tramos de la ruta">
+              @for (op of opciones().enRuta; track op.tramo.id) {
+                <option [value]="op.tramo.id" [selected]="op.tramo.id === tramoElegido()">{{ op.etiqueta }}</option>
+              }
+            </optgroup>
+          }
+          <optgroup label="Otros tramos">
+            @for (op of opciones().otros; track op.tramo.id) {
+              <option [value]="op.tramo.id" [selected]="op.tramo.id === tramoElegido()">{{ op.etiqueta }}</option>
+            }
+          </optgroup>
+        </select>
+        <button type="button" class="btn btn-primary btn-sm" (click)="comparar()"
+                [disabled]="tramoElegido() === null || comp.cargando()">
+          {{ comp.cargando() ? 'Comparando…' : 'Comparar' }}
+        </button>
+        @if (comp.activo()) {
+          <button type="button" class="btn btn-outline btn-sm" (click)="comp.limpiar()">Quitar comparación</button>
+        }
+      </div>
+    </div>
+
+    @if (comp.error(); as error) {
+      <p class="comp-error" role="alert">{{ error }}</p>
+    }
+
+    @if (comp.comparacion(); as c) {
+      <div class="comp-resultado" aria-live="polite">
+        <div class="comp-delta" [class.sube]="c.delta !== null && c.delta > 0" [class.sin-camino]="c.delta === null">
+          {{ textoDelta(c.delta) }}
+        </div>
+        <div class="comp-rutas">
+          <div class="comp-ruta">
+            <span class="linea linea-original"></span>
+            <div>
+              <strong>Ruta original · {{ c.original.costo }} min</strong>
+              <span>{{ caminoTexto(c.original.camino) }}</span>
+            </div>
+          </div>
+          <div class="comp-ruta">
+            <span class="linea linea-alterna"></span>
+            <div>
+              <strong>Con el tramo {{ c.tramoCerrado.id }} cerrado ·
+                {{ c.alterna.costo < 0 ? 'sin camino' : c.alterna.costo + ' min' }}</strong>
+              <span>{{ c.alterna.costo < 0 ? nombre(c.original.hasta) + ' queda inalcanzable desde ' + nombre(c.original.desde) : caminoTexto(c.alterna.camino) }}</span>
+            </div>
+          </div>
+        </div>
+        @if (c.alterna.costo >= 0 && (c.paradasQueSeDejan.length || c.paradasNuevas.length)) {
+          <p class="comp-cambios">
+            @if (c.paradasQueSeDejan.length) {
+              Deja de pasar por {{ caminoTexto(c.paradasQueSeDejan).split(' → ').join(', ') }}.
+            }
+            @if (c.paradasNuevas.length) {
+              Ahora pasa por {{ caminoTexto(c.paradasNuevas).split(' → ').join(', ') }}.
+            }
+          </p>
+        }
+        <div class="comp-leyenda">
+          <span><i class="linea linea-original"></i>Solo ruta original</span>
+          <span><i class="linea linea-alterna"></i>Solo ruta con el cierre</span>
+          <span><i class="linea linea-ambas"></i>Tramo compartido</span>
+          <span><i class="linea linea-cerrado"></i>Tramo cerrado</span>
+        </div>
+      </div>
+    }
+  </section>
+}

@@ -278,6 +278,8 @@
         </table>
       </div>
     </div>
+
+    <app-comparador></app-comparador>
   } @else if (!rep.error() && !rep.degradado()) {
     <p class="rep-vacio">
       Elige un algoritmo y las paradas, y pulsa <strong>{{ algoritmo() === 'dijkstra' ? 'Calcular ruta' : 'Recorrer red' }}</strong>.

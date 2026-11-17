@@ -1,3 +1,4 @@
+import { Tramo } from '../core/models/red.model';
 import { RespuestaRecorrido, RespuestaRuta } from './traza.model';
 
 /** Nombres del grafo guía de 5 paradas (A=0 ... E=4). */
@@ -67,4 +68,20 @@ export const DFS_PEQUENO: RespuestaRecorrido = {
     { visita: 3, parada: 3, nombre: 'D', desde: 1, profundidad: 2, descubiertas: [], pila: [2] },
     { visita: 4, parada: 2, nombre: 'C', desde: 0, profundidad: 1, descubiertas: [], pila: [] }
   ]
+};
+
+/** Tramos del grafo guía con sus ids de grafo-service (1..7). */
+export const TRAMOS_GUIA: Tramo[] = [
+  { id: 1, origen: 0, destino: 1, peso: 4, abierto: true },
+  { id: 2, origen: 0, destino: 2, peso: 2, abierto: true },
+  { id: 3, origen: 1, destino: 2, peso: 3, abierto: true },
+  { id: 4, origen: 1, destino: 3, peso: 5, abierto: true },
+  { id: 5, origen: 2, destino: 3, peso: 8, abierto: true },
+  { id: 6, origen: 2, destino: 4, peso: 15, abierto: true },
+  { id: 7, origen: 3, destino: 4, peso: 2, abierto: true }
+];
+
+/** /calcular?desde=0&hasta=4&sin=4 (se cierra B-D): A -> C -> D -> E con costo 12. */
+export const RUTA_GUIA_SIN_BD: RespuestaRuta = {
+  redId: 1, desde: 0, hasta: 4, costoTotal: 12, camino: [0, 2, 3, 4], modoEfectivo: 'NATIVE', tramoCerrado: 4
 };

@@ -2,6 +2,7 @@ import { Component, HostListener, OnDestroy, computed, effect, inject, signal, u
 import { RedService } from '../core/services/red.service';
 import { ReproductorService } from './reproductor.service';
 import { AlgoritmoTraza, Velocidad } from './traza.model';
+import { ComparadorComponent } from './comparador/comparador.component';
 import { crearArchivoTraza, leerArchivoTraza, mayorParada, nombreArchivoTraza } from './traza-archivo';
 
 /**
@@ -12,6 +13,7 @@ import { crearArchivoTraza, leerArchivoTraza, mayorParada, nombreArchivoTraza } 
 @Component({
   selector: 'app-reproductor',
   standalone: true,
+  imports: [ComparadorComponent],
   templateUrl: './reproductor.component.html',
   styleUrl: './reproductor.component.css'
 })
