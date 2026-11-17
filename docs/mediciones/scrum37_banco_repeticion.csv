@@ -1,0 +1,127 @@
+red,paradas,tramos,motor,corrida,us_por_consulta,descartada
+Red real 400 (redId 2),400,1100,c_puro,1,43.6797,si
+Red real 400 (redId 2),400,1100,c_puro,2,40.8481,no
+Red real 400 (redId 2),400,1100,c_puro,3,53.6219,no
+Red real 400 (redId 2),400,1100,c_puro,4,41.2057,no
+Red real 400 (redId 2),400,1100,c_puro,5,59.9783,no
+Red real 400 (redId 2),400,1100,c_puro,6,41.4673,no
+Red real 400 (redId 2),400,1100,c_jna,1,63.0148,si
+Red real 400 (redId 2),400,1100,c_jna,2,96.3739,no
+Red real 400 (redId 2),400,1100,c_jna,3,72.6128,no
+Red real 400 (redId 2),400,1100,c_jna,4,72.7160,no
+Red real 400 (redId 2),400,1100,c_jna,5,62.2186,no
+Red real 400 (redId 2),400,1100,c_jna,6,61.1173,no
+Red real 400 (redId 2),400,1100,java,1,66.5824,si
+Red real 400 (redId 2),400,1100,java,2,70.5345,no
+Red real 400 (redId 2),400,1100,java,3,65.6397,no
+Red real 400 (redId 2),400,1100,java,4,92.9730,no
+Red real 400 (redId 2),400,1100,java,5,70.7610,no
+Red real 400 (redId 2),400,1100,java,6,61.0668,no
+Generada 50,50,138,c_puro,1,7.6195,si
+Generada 50,50,138,c_puro,2,4.5909,no
+Generada 50,50,138,c_puro,3,3.9264,no
+Generada 50,50,138,c_puro,4,5.6724,no
+Generada 50,50,138,c_puro,5,5.0349,no
+Generada 50,50,138,c_puro,6,3.7099,no
+Generada 50,50,138,c_jna,1,6.0162,si
+Generada 50,50,138,c_jna,2,6.1896,no
+Generada 50,50,138,c_jna,3,12.2575,no
+Generada 50,50,138,c_jna,4,8.2068,no
+Generada 50,50,138,c_jna,5,6.5133,no
+Generada 50,50,138,c_jna,6,8.8423,no
+Generada 50,50,138,java,1,7.7986,si
+Generada 50,50,138,java,2,12.2974,no
+Generada 50,50,138,java,3,14.3480,no
+Generada 50,50,138,java,4,14.5414,no
+Generada 50,50,138,java,5,12.9334,no
+Generada 50,50,138,java,6,17.1197,no
+Generada 150,150,413,c_puro,1,44.5770,si
+Generada 150,150,413,c_puro,2,29.2404,no
+Generada 150,150,413,c_puro,3,16.6881,no
+Generada 150,150,413,c_puro,4,14.9972,no
+Generada 150,150,413,c_puro,5,16.7476,no
+Generada 150,150,413,c_puro,6,21.3124,no
+Generada 150,150,413,c_jna,1,32.5240,si
+Generada 150,150,413,c_jna,2,31.7137,no
+Generada 150,150,413,c_jna,3,60.2354,no
+Generada 150,150,413,c_jna,4,62.6208,no
+Generada 150,150,413,c_jna,5,43.4551,no
+Generada 150,150,413,c_jna,6,60.5686,no
+Generada 150,150,413,java,1,26.1025,si
+Generada 150,150,413,java,2,56.8083,no
+Generada 150,150,413,java,3,54.5199,no
+Generada 150,150,413,java,4,46.7655,no
+Generada 150,150,413,java,5,48.4707,no
+Generada 150,150,413,java,6,65.8438,no
+Generada 400,400,1100,c_puro,1,50.2958,si
+Generada 400,400,1100,c_puro,2,45.6709,no
+Generada 400,400,1100,c_puro,3,44.3227,no
+Generada 400,400,1100,c_puro,4,46.1019,no
+Generada 400,400,1100,c_puro,5,46.1943,no
+Generada 400,400,1100,c_puro,6,55.7978,no
+Generada 400,400,1100,c_jna,1,77.3235,si
+Generada 400,400,1100,c_jna,2,70.8172,no
+Generada 400,400,1100,c_jna,3,133.5578,no
+Generada 400,400,1100,c_jna,4,90.3132,no
+Generada 400,400,1100,c_jna,5,107.9729,no
+Generada 400,400,1100,c_jna,6,55.9182,no
+Generada 400,400,1100,java,1,146.0237,si
+Generada 400,400,1100,java,2,154.0163,no
+Generada 400,400,1100,java,3,178.3688,no
+Generada 400,400,1100,java,4,160.4581,no
+Generada 400,400,1100,java,5,169.7253,no
+Generada 400,400,1100,java,6,78.8053,no
+Generada 1000,1000,2750,c_puro,1,101.3145,si
+Generada 1000,1000,2750,c_puro,2,101.4361,no
+Generada 1000,1000,2750,c_puro,3,94.3280,no
+Generada 1000,1000,2750,c_puro,4,133.7960,no
+Generada 1000,1000,2750,c_puro,5,109.7672,no
+Generada 1000,1000,2750,c_puro,6,101.7227,no
+Generada 1000,1000,2750,c_jna,1,176.2134,si
+Generada 1000,1000,2750,c_jna,2,125.3929,no
+Generada 1000,1000,2750,c_jna,3,152.9423,no
+Generada 1000,1000,2750,c_jna,4,119.8220,no
+Generada 1000,1000,2750,c_jna,5,110.5291,no
+Generada 1000,1000,2750,c_jna,6,108.9619,no
+Generada 1000,1000,2750,java,1,313.4380,si
+Generada 1000,1000,2750,java,2,238.5902,no
+Generada 1000,1000,2750,java,3,209.4096,no
+Generada 1000,1000,2750,java,4,365.0950,no
+Generada 1000,1000,2750,java,5,217.8074,no
+Generada 1000,1000,2750,java,6,196.3901,no
+Generada 2000,2000,5500,c_puro,1,250.9172,si
+Generada 2000,2000,5500,c_puro,2,306.1413,no
+Generada 2000,2000,5500,c_puro,3,323.5278,no
+Generada 2000,2000,5500,c_puro,4,238.3151,no
+Generada 2000,2000,5500,c_puro,5,329.5279,no
+Generada 2000,2000,5500,c_puro,6,273.2695,no
+Generada 2000,2000,5500,c_jna,1,252.1079,si
+Generada 2000,2000,5500,c_jna,2,368.1373,no
+Generada 2000,2000,5500,c_jna,3,359.3615,no
+Generada 2000,2000,5500,c_jna,4,309.8286,no
+Generada 2000,2000,5500,c_jna,5,266.0226,no
+Generada 2000,2000,5500,c_jna,6,279.6640,no
+Generada 2000,2000,5500,java,1,682.5637,si
+Generada 2000,2000,5500,java,2,814.9263,no
+Generada 2000,2000,5500,java,3,711.2280,no
+Generada 2000,2000,5500,java,4,697.5060,no
+Generada 2000,2000,5500,java,5,539.0534,no
+Generada 2000,2000,5500,java,6,781.2679,no
+Generada 4000,4000,11000,c_puro,1,495.7683,si
+Generada 4000,4000,11000,c_puro,2,486.9708,no
+Generada 4000,4000,11000,c_puro,3,535.9897,no
+Generada 4000,4000,11000,c_puro,4,537.4596,no
+Generada 4000,4000,11000,c_puro,5,484.1239,no
+Generada 4000,4000,11000,c_puro,6,648.9792,no
+Generada 4000,4000,11000,c_jna,1,837.4282,si
+Generada 4000,4000,11000,c_jna,2,695.7100,no
+Generada 4000,4000,11000,c_jna,3,660.9547,no
+Generada 4000,4000,11000,c_jna,4,644.7722,no
+Generada 4000,4000,11000,c_jna,5,580.2106,no
+Generada 4000,4000,11000,c_jna,6,617.8653,no
+Generada 4000,4000,11000,java,1,1607.7474,si
+Generada 4000,4000,11000,java,2,1640.5312,no
+Generada 4000,4000,11000,java,3,1598.0603,no
+Generada 4000,4000,11000,java,4,1460.3700,no
+Generada 4000,4000,11000,java,5,1920.8315,no
+Generada 4000,4000,11000,java,6,1117.1465,no

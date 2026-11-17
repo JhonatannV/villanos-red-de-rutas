@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 440" font-family="Segoe UI, Arial, sans-serif">
+<rect width="1040" height="440" fill="#ffffff"/>
+<text x="62" y="22" font-size="14" font-weight="700" fill="#162030">Red real de 400 paradas y 1.100 tramos · 1.000 rutas</text>
+<line x1="62.0" y1="358.0" x2="437.6" y2="358.0" stroke="#e3e7ed"/>
+<text x="54.0" y="362.0" font-size="11" text-anchor="end" fill="#5a6678">0</text>
+<line x1="62.0" y1="254.0" x2="437.6" y2="254.0" stroke="#e3e7ed"/>
+<text x="54.0" y="258.0" font-size="11" text-anchor="end" fill="#5a6678">50</text>
+<line x1="62.0" y1="150.0" x2="437.6" y2="150.0" stroke="#e3e7ed"/>
+<text x="54.0" y="154.0" font-size="11" text-anchor="end" fill="#5a6678">100</text>
+<line x1="62.0" y1="46.0" x2="437.6" y2="46.0" stroke="#e3e7ed"/>
+<text x="54.0" y="50.0" font-size="11" text-anchor="end" fill="#5a6678">150</text>
+<rect x="95.8" y="268.7" width="57.6" height="89.3" fill="#2050cc" fill-opacity="0.85" rx="3"/>
+<line x1="124.6" y1="274.6" x2="124.6" y2="178.1" stroke="#162030" stroke-width="1.5"/>
+<line x1="116.6" y1="274.6" x2="132.6" y2="274.6" stroke="#162030" stroke-width="1.5"/>
+<line x1="116.6" y1="178.1" x2="132.6" y2="178.1" stroke="#162030" stroke-width="1.5"/>
+<circle cx="163.4" cy="274.6" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="169.4" cy="268.7" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="163.4" cy="178.1" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="169.4" cy="215.4" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="163.4" cy="271.2" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<text x="124.6" y="170.1" font-size="13" font-weight="700" text-anchor="middle" fill="#2050cc">42.9 µs</text>
+<text x="124.6" y="378.0" font-size="12.5" font-weight="600" text-anchor="middle" fill="#162030">C puro</text>
+<rect x="221.0" y="233.8" width="57.6" height="124.2" fill="#1a9a6c" fill-opacity="0.85" rx="3"/>
+<line x1="249.8" y1="241.7" x2="249.8" y2="167.9" stroke="#162030" stroke-width="1.5"/>
+<line x1="241.8" y1="241.7" x2="257.8" y2="241.7" stroke="#162030" stroke-width="1.5"/>
+<line x1="241.8" y1="167.9" x2="257.8" y2="167.9" stroke="#162030" stroke-width="1.5"/>
+<circle cx="288.6" cy="233.8" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="294.6" cy="167.9" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="288.6" cy="183.9" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="294.6" cy="241.7" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="288.6" cy="238.7" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<text x="249.8" y="159.9" font-size="13" font-weight="700" text-anchor="middle" fill="#1a9a6c">59.7 µs</text>
+<text x="249.8" y="378.0" font-size="12.5" font-weight="600" text-anchor="middle" fill="#162030">C por JNA</text>
+<rect x="346.2" y="159.7" width="57.6" height="198.3" fill="#cc3b30" fill-opacity="0.85" rx="3"/>
+<line x1="375.0" y1="229.5" x2="375.0" y2="120.8" stroke="#162030" stroke-width="1.5"/>
+<line x1="367.0" y1="229.5" x2="383.0" y2="229.5" stroke="#162030" stroke-width="1.5"/>
+<line x1="367.0" y1="120.8" x2="383.0" y2="120.8" stroke="#162030" stroke-width="1.5"/>
+<circle cx="413.8" cy="159.7" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="419.8" cy="120.8" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="413.8" cy="229.5" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="419.8" cy="175.4" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<circle cx="413.8" cy="142.0" r="2.6" fill="#162030" fill-opacity="0.55"/>
+<text x="375.0" y="112.8" font-size="13" font-weight="700" text-anchor="middle" fill="#cc3b30">95.3 µs</text>
+<text x="375.0" y="378.0" font-size="12.5" font-weight="600" text-anchor="middle" fill="#162030">Java</text>
+<text x="14" y="202.0" font-size="12" text-anchor="middle" fill="#5a6678" transform="rotate(-90 14 202.0)">Microsegundos por ruta (mediana de 5)</text>
+<text x="519.6" y="22" font-size="14" font-weight="700" fill="#162030">Cómo crece con el tamaño (redes generadas de SCRUM-6)</text>
+<line x1="519.6" y1="358.0" x2="1020.0" y2="358.0" stroke="#e3e7ed"/>
+<text x="511.6" y="362.0" font-size="11" text-anchor="end" fill="#5a6678">0</text>
+<line x1="519.6" y1="280.0" x2="1020.0" y2="280.0" stroke="#e3e7ed"/>
+<text x="511.6" y="284.0" font-size="11" text-anchor="end" fill="#5a6678">500</text>
+<line x1="519.6" y1="202.0" x2="1020.0" y2="202.0" stroke="#e3e7ed"/>
+<text x="511.6" y="206.0" font-size="11" text-anchor="end" fill="#5a6678">1,000</text>
+<line x1="519.6" y1="124.0" x2="1020.0" y2="124.0" stroke="#e3e7ed"/>
+<text x="511.6" y="128.0" font-size="11" text-anchor="end" fill="#5a6678">1,500</text>
+<line x1="519.6" y1="46.0" x2="1020.0" y2="46.0" stroke="#e3e7ed"/>
+<text x="511.6" y="50.0" font-size="11" text-anchor="end" fill="#5a6678">2,000</text>
+<text x="996.2" y="376.0" font-size="11" text-anchor="middle" fill="#5a6678">11,000</text>
+<text x="757.9" y="376.0" font-size="11" text-anchor="middle" fill="#5a6678">5,500</text>
+<text x="638.7" y="376.0" font-size="11" text-anchor="middle" fill="#5a6678">2,750</text>
+<text x="567.3" y="376.0" font-size="11" text-anchor="middle" fill="#5a6678">1,100</text>
+<text x="525.6" y="376.0" font-size="11" text-anchor="middle" fill="#5a6678">138</text>
+<text x="769.8" y="402" font-size="12" text-anchor="middle" fill="#5a6678">Tramos de la red</text>
+<polyline points="525.6,357.5 537.5,355.1 567.3,346.8 638.7,341.0 757.9,322.2 996.2,276.6" fill="none" stroke="#2050cc" stroke-width="2.5"/>
+<circle cx="525.6" cy="357.5" r="3.5" fill="#2050cc"/>
+<circle cx="537.5" cy="355.1" r="3.5" fill="#2050cc"/>
+<circle cx="567.3" cy="346.8" r="3.5" fill="#2050cc"/>
+<circle cx="638.7" cy="341.0" r="3.5" fill="#2050cc"/>
+<circle cx="757.9" cy="322.2" r="3.5" fill="#2050cc"/>
+<circle cx="996.2" cy="276.6" r="3.5" fill="#2050cc"/>
+<text x="990.2" y="267.6" font-size="12" font-weight="700" text-anchor="end" fill="#2050cc">C puro 522 µs</text>
+<polyline points="525.6,354.9 537.5,350.6 567.3,346.9 638.7,338.8 757.9,308.4 996.2,238.4" fill="none" stroke="#1a9a6c" stroke-width="2.5"/>
+<circle cx="525.6" cy="354.9" r="3.5" fill="#1a9a6c"/>
+<circle cx="537.5" cy="350.6" r="3.5" fill="#1a9a6c"/>
+<circle cx="567.3" cy="346.9" r="3.5" fill="#1a9a6c"/>
+<circle cx="638.7" cy="338.8" r="3.5" fill="#1a9a6c"/>
+<circle cx="757.9" cy="308.4" r="3.5" fill="#1a9a6c"/>
+<circle cx="996.2" cy="238.4" r="3.5" fill="#1a9a6c"/>
+<text x="990.2" y="229.4" font-size="12" font-weight="700" text-anchor="end" fill="#1a9a6c">C por JNA 767 µs</text>
+<polyline points="525.6,356.7 537.5,352.0 567.3,338.3 638.7,302.8 757.9,254.4 996.2,144.0" fill="none" stroke="#cc3b30" stroke-width="2.5"/>
+<circle cx="525.6" cy="356.7" r="3.5" fill="#cc3b30"/>
+<circle cx="537.5" cy="352.0" r="3.5" fill="#cc3b30"/>
+<circle cx="567.3" cy="338.3" r="3.5" fill="#cc3b30"/>
+<circle cx="638.7" cy="302.8" r="3.5" fill="#cc3b30"/>
+<circle cx="757.9" cy="254.4" r="3.5" fill="#cc3b30"/>
+<circle cx="996.2" cy="144.0" r="3.5" fill="#cc3b30"/>
+<text x="990.2" y="135.0" font-size="12" font-weight="700" text-anchor="end" fill="#cc3b30">Java 1,372 µs</text>
+<text x="20" y="430" font-size="11.5" fill="#5a6678">Barra = mediana de 5 corridas (se descarta la 1.ª). Línea vertical = mínimo y máximo. Puntos = cada corrida. Docker, 1,5 CPU y 512 MB (límites de ruta-service).</text>
+</svg>
