@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ReproductorComponent } from './reproductor.component';
 import { ReproductorService } from './reproductor.service';
 import { RedService } from '../core/services/red.service';
+import { AuthService } from '../core/auth/auth.service';
 import { RUTA_GUIA, NOMBRES_GUIA, nombreGuia } from './traza.fixtures';
 import { construirTrazaDijkstra } from './traza.builder';
 import { crearArchivoTraza } from './traza-archivo';
@@ -23,6 +24,9 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
     const red = TestBed.inject(RedService);
     red.redActual.set({ redId: 1, nombre: 'Guía', paradas: [], tramos: [] });
     red.paradas.set(NOMBRES_GUIA.map((nombre, id) => ({ id, nombre, x: id * 100, y: 100 })));
+
+    // Con sesión: sin ella el botón principal lleva al inicio de sesión (se prueba aparte)
+    TestBed.inject(AuthService).isAuthenticated.set(true);
 
     rep = TestBed.inject(ReproductorService);
     http = TestBed.inject(HttpTestingController);
@@ -64,13 +68,13 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
     boton('Siguiente').click();
     fixture.detectChanges();
     expect(el.querySelector('.vcr-contador')?.textContent).toContain('Paso 2 de 5');
-    expect(el.querySelector('.paso-titulo h4')?.textContent).toContain('Se cierra C');
+    expect(el.querySelector('.paso-titulo h3')?.textContent).toContain('Se cierra C');
     expect(el.querySelectorAll('.rep-tabla tbody tr').length).toBe(5);
     expect(el.querySelector('.fila-actual')?.textContent).toContain('C');
 
     boton('Atrás').click();
     fixture.detectChanges();
-    expect(el.querySelector('.paso-titulo h4')?.textContent).toContain('Se cierra A');
+    expect(el.querySelector('.paso-titulo h3')?.textContent).toContain('Se cierra A');
     expect(el.querySelectorAll('.rep-tabla tbody tr').length).toBe(3);
   });
 
@@ -151,6 +155,19 @@ describe('ReproductorComponent (RF-04 · SCRUM-31)', () => {
     expect(click).toHaveBeenCalledTimes(1);
     expect(el.querySelector('.rep-archivo')?.textContent).toMatch(/traza-dijkstra-0-4-.*\.json \(6 pasos\)/);
     click.mockRestore();
+  });
+
+  it('sin sesión el botón principal lleva al inicio de sesión en vez de fallar', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.isAuthenticated.set(false);
+    const login = vi.spyOn(auth, 'login').mockResolvedValue(undefined);
+    fixture.detectChanges();
+
+    expect(boton('Calcular ruta')).toBeUndefined();
+    boton('Inicia sesión para calcular').click();
+    expect(login).toHaveBeenCalledTimes(1);
+    expect(el.querySelector('.rep-invitado')?.textContent).toContain('consultor');
+    http.expectNone(() => true);
   });
 
   it('las flechas del teclado avanzan y retroceden', () => {

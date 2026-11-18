@@ -4,6 +4,13 @@ import { RedService } from '../../core/services/red.service';
 import { Parada, Tramo } from '../../core/models/red.model';
 import { ReproductorService } from '../../reproductor/reproductor.service';
 import { ComparadorService } from '../../reproductor/comparador/comparador.service';
+import { PanelService } from '../../core/services/panel.service';
+import { claveTramo } from '../../reproductor/traza.builder';
+
+export interface ItemLeyenda {
+  texto: string;
+  muestra: string;
+}
 
 export interface EtiquetaPeso {
   tramoId: number;
@@ -31,6 +38,71 @@ export class GrafoVisorComponent {
   readonly rep = inject(ReproductorService);
   // Comparador de 2 rutas (RF-08): ruta original y ruta con un tramo cerrado
   readonly comp = inject(ComparadorService);
+  readonly panel = inject(PanelService);
+
+  // Los pesos se calculan siempre (RF-02) pero se muestran solo si se piden: el mapa queda más limpio
+  readonly pesosVisibles = signal<boolean>(false);
+
+  // La comparación se pinta solo con la pestaña Comparar abierta; si no, se pinta la traza
+  readonly modoComparar = computed(() => this.comp.activo() && this.panel.pestana() === 'comparar');
+  readonly modoTraza = computed(() => !this.modoComparar() && this.rep.pasoActual() !== null);
+
+  // Orden de cada tramo de la ruta final, para dibujarla tramo a tramo desde el origen
+  private readonly ordenCamino = computed(() => {
+    const c = this.rep.caminoVisible();
+    const m = new Map<string, number>();
+    for (let i = 1; i < c.length; i++) {
+      m.set(claveTramo(c[i - 1], c[i]), i - 1);
+    }
+    return m;
+  });
+
+  readonly leyenda = computed<ItemLeyenda[]>(() => {
+    if (this.modoComparar()) {
+      return [
+        { texto: 'Solo ruta original', muestra: 'ley-linea ley-ruta' },
+        { texto: 'Solo ruta con el cierre', muestra: 'ley-linea ley-alterna' },
+        { texto: 'Compartido', muestra: 'ley-linea ley-compartido' },
+        { texto: 'Tramo cerrado', muestra: 'ley-linea ley-cerrado' }
+      ];
+    }
+    const t = this.rep.traza();
+    if (this.modoTraza() && t) {
+      const dijkstra = t.algoritmo === 'dijkstra';
+      const items: ItemLeyenda[] = [
+        { texto: 'Parada actual', muestra: 'ley-punto ley-actual' },
+        { texto: dijkstra ? 'Cerrada (distancia final)' : 'Visitada', muestra: 'ley-punto ley-cerrada' },
+        { texto: dijkstra ? 'Distancia tentativa' : 'En espera', muestra: 'ley-punto ley-tentativa' },
+        { texto: 'Árbol de caminos', muestra: 'ley-linea ley-arbol' },
+        { texto: 'Tramo revisado ahora', muestra: 'ley-linea ley-revisado' }
+      ];
+      if (dijkstra) {
+        items.push({ texto: 'Ruta final', muestra: 'ley-linea ley-ruta' });
+      }
+      return items;
+    }
+    return [
+      { texto: 'Tramo abierto', muestra: 'ley-linea ley-abierto' },
+      { texto: 'Cierre vial', muestra: 'ley-linea ley-cerrado' }
+    ];
+  });
+
+  readonly nombreRed = computed(() => this.redService.redActual()?.nombre ?? 'Red de transporte');
+
+  togglePesos(): void {
+    this.pesosVisibles.update(v => !v);
+  }
+
+  /** Retardo para que la ruta final aparezca tramo a tramo desde el origen. */
+  retardoCamino(origen: number, destino: number): string {
+    const i = this.ordenCamino().get(claveTramo(origen, destino)) ?? 0;
+    return `${i * 70}ms`;
+  }
+
+  /** Clase de comparación de un tramo, solo mientras la pestaña Comparar está abierta. */
+  claseComparacion(tramo: Tramo): string | null {
+    return this.modoComparar() && tramo.abierto ? this.comp.claseTramo(tramo) : null;
+  }
 
   // Dimensiones base del lienzo SVG
   readonly BASE_WIDTH = 1200;

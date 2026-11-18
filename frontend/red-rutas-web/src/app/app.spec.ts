@@ -61,4 +61,21 @@ describe('App', () => {
     expect(compiled.querySelector('.role-planificador')?.textContent).toContain('planificador');
     expect(compiled.querySelector('.btn-outline')?.textContent).toContain('Cerrar Sesión');
   });
+  it('la mesa de trabajo tiene las pestañas Recorrido, Comparar y Red, y se cambian con el teclado', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const tabs = [...el.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    expect(tabs.map(t => t.textContent?.trim())).toEqual(['Recorrido', 'Comparar', 'Red']);
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    expect((el.querySelector('#contenido-comparar') as HTMLElement).hidden).toBe(true);
+
+    tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    fixture.detectChanges();
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect((el.querySelector('#contenido-comparar') as HTMLElement).hidden).toBe(false);
+    expect((el.querySelector('#contenido-recorrido') as HTMLElement).hidden).toBe(true);
+  });
 });
+

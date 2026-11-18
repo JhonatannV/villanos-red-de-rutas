@@ -2,7 +2,7 @@ import { Component, HostListener, OnDestroy, computed, effect, inject, signal, u
 import { RedService } from '../core/services/red.service';
 import { ReproductorService } from './reproductor.service';
 import { AlgoritmoTraza, Velocidad } from './traza.model';
-import { ComparadorComponent } from './comparador/comparador.component';
+import { AuthService } from '../core/auth/auth.service';
 import { crearArchivoTraza, leerArchivoTraza, mayorParada, nombreArchivoTraza } from './traza-archivo';
 
 /**
@@ -13,13 +13,13 @@ import { crearArchivoTraza, leerArchivoTraza, mayorParada, nombreArchivoTraza } 
 @Component({
   selector: 'app-reproductor',
   standalone: true,
-  imports: [ComparadorComponent],
   templateUrl: './reproductor.component.html',
   styleUrl: './reproductor.component.css'
 })
 export class ReproductorComponent implements OnDestroy {
   readonly redService = inject(RedService);
   readonly rep = inject(ReproductorService);
+  readonly auth = inject(AuthService);
 
   readonly algoritmos: { id: AlgoritmoTraza; etiqueta: string }[] = [
     { id: 'dijkstra', etiqueta: 'Dijkstra' },
@@ -45,6 +45,20 @@ export class ReproductorComponent implements OnDestroy {
 
   /** Resultado de la última exportación o importación (SCRUM-34). */
   readonly avisoArchivo = signal<{ tipo: 'ok' | 'error'; texto: string } | null>(null);
+
+  /** Una línea que dice qué hace cada algoritmo, bajo el selector. */
+  readonly descripcionAlgoritmo = computed(() => {
+    switch (this.algoritmo()) {
+      case 'anchura': return 'Recorrido por niveles desde el origen (cola)';
+      case 'profundidad': return 'Recorrido en profundidad desde el origen (pila)';
+      default: return 'Ruta más corta con montículo binario';
+    }
+  });
+
+  readonly porcentaje = computed(() => {
+    const total = this.rep.totalPasos();
+    return total > 1 ? (this.rep.indice() / (total - 1)) * 100 : 0;
+  });
 
   readonly mismaParada = computed(() => this.algoritmo() === 'dijkstra' && this.desde() === this.hasta());
 
@@ -96,6 +110,10 @@ export class ReproductorComponent implements OnDestroy {
   cambiarHasta(valor: string): void {
     this.destinoElegido = true;
     this.hasta.set(Number(valor));
+  }
+
+  iniciarSesion(): void {
+    this.auth.login();
   }
 
   calcular(): void {

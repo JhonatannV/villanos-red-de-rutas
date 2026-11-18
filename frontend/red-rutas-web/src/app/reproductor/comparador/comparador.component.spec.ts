@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComparadorComponent } from './comparador.component';
 import { ComparadorService } from './comparador.service';
+import { PanelService } from '../../core/services/panel.service';
 import { ReproductorService } from '../reproductor.service';
 import { RedService } from '../../core/services/red.service';
 import { construirTrazaDijkstra, construirTrazaRecorrido } from '../traza.builder';
@@ -35,12 +36,18 @@ describe('ComparadorComponent (RF-08 · SCRUM-33)', () => {
     http.verify();
   });
 
-  it('no aparece sin una ruta de Dijkstra', () => {
+  it('sin una ruta de Dijkstra explica qué hacer y lleva a Recorrido', () => {
     fixture.detectChanges();
     expect(el.querySelector('.comp')).toBeNull();
+    expect(el.querySelector('.comp-vacio')?.textContent).toContain('Primero calcula una ruta con Dijkstra');
     rep.cargarTraza(construirTrazaRecorrido(BFS_PEQUENO, nombreGuia));
     fixture.detectChanges();
     expect(el.querySelector('.comp')).toBeNull();
+
+    const panel = TestBed.inject(PanelService);
+    panel.abrir('comparar');
+    [...el.querySelectorAll('button')].find(b => b.textContent?.includes('Ir a Recorrido'))!.click();
+    expect(panel.pestana()).toBe('recorrido');
   });
 
   it('ofrece primero los tramos de la ruta y propone el primero', () => {
@@ -62,6 +69,7 @@ describe('ComparadorComponent (RF-08 · SCRUM-33)', () => {
     fixture.detectChanges();
 
     expect(el.querySelector('.comp-delta')?.textContent).toContain('Aumentó en +1 minuto');
+    expect(el.querySelector('.comp-delta-num')?.textContent).toContain('+1 min');
     const rutas = el.querySelector('.comp-rutas')?.textContent ?? '';
     expect(rutas).toContain('Ruta original · 11 min');
     expect(rutas).toContain('A → B → D → E');

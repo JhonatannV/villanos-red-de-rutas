@@ -1,105 +1,67 @@
 <div class="visor-wrapper">
-  <!-- Barra de Herramientas y Controles de Zoom/Paneo (RF-02) -->
+  <!-- Barra del mapa: nombre, cifras de la red y controles (RF-02) -->
   <div class="visor-toolbar">
     <div class="toolbar-title">
-      <div class="toolbar-icon-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tool-icon">
-          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-          <line x1="8" y1="2" x2="8" y2="18"></line>
-          <line x1="16" y1="6" x2="16" y2="22"></line>
-        </svg>
-      </div>
-      <div>
-        <h3>Visualizador Vectorial del Grafo</h3>
-        <span class="toolbar-subtitle">Topología Urbana &middot; SVG Reactivo</span>
-      </div>
-      <span class="badge badge-counter">
-        {{ redService.totalParadas() }} Nodos &middot; {{ redService.totalTramos() }} Aristas
+      <h2>{{ nombreRed() }}</h2>
+      <span class="toolbar-stats num">
+        {{ redService.totalParadas() }} paradas · {{ redService.totalTramos() }} tramos ·
+        <span [class.stat-alerta]="redService.tramosCerrados() > 0">{{ redService.tramosCerrados() }} cerrados</span>
       </span>
     </div>
 
     <div class="toolbar-controls">
-      <div class="zoom-controls">
-        <button class="tool-btn" (click)="zoomIn()" [disabled]="zoom() >= MAX_ZOOM" title="Acercar (Zoom In)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            <line x1="11" y1="8" x2="11" y2="14"></line>
-            <line x1="8" y1="11" x2="14" y2="11"></line>
-          </svg>
+      <button type="button" class="tool-btn" (click)="togglePesos()" [attr.aria-pressed]="pesosVisibles()"
+              [class.tool-btn-on]="pesosVisibles()" title="Mostrar u ocultar los minutos de cada tramo">
+        Pesos
+      </button>
+      <div class="zoom-controls" role="group" aria-label="Zoom">
+        <button type="button" class="tool-btn tool-btn-icon" (click)="zoomOut()" [disabled]="zoom() <= MIN_ZOOM" aria-label="Alejar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
         </button>
-        <span class="zoom-level">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
-        <button class="tool-btn" (click)="zoomOut()" [disabled]="zoom() <= MIN_ZOOM" title="Alejar (Zoom Out)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            <line x1="8" y1="11" x2="14" y2="11"></line>
-          </svg>
-        </button>
-        <button class="tool-btn tool-btn-reset" (click)="resetVista()" title="Restablecer posición inicial y centrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-          </svg>
-          Centrar
+        <span class="zoom-level num">{{ (zoom() * 100) | number:'1.0-0' }}%</span>
+        <button type="button" class="tool-btn tool-btn-icon" (click)="zoomIn()" [disabled]="zoom() >= MAX_ZOOM" aria-label="Acercar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
       </div>
-
-      <div class="pan-hint">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hint-icon">
-          <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
-          <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
-          <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
-          <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
-        </svg>
-        <span>Arrastra para mover &middot; Rueda para zoom</span>
-      </div>
+      <button type="button" class="tool-btn" (click)="resetVista()" title="Volver a la vista inicial">Encuadrar</button>
     </div>
   </div>
 
-  <!-- Contenedor Interactivo SVG con Paneo y Zoom -->
+  <!-- Lienzo SVG con paneo y zoom -->
   <div class="canvas-container">
     <svg #svgCanvas
          class="grafo-canvas"
          [attr.viewBox]="viewBox()"
+         role="img"
+         [attr.aria-label]="'Mapa de ' + redService.totalParadas() + ' paradas y ' + redService.totalTramos() + ' tramos'"
          (mousedown)="onMouseDown($event)"
          (mousemove)="onMouseMove($event)"
          (wheel)="onWheel($event)">
 
-      <!-- Definiciones de Gradientes y Filtros -->
       <defs>
         <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-          <circle cx="0" cy="0" r="1.5" fill="rgba(56, 189, 248, 0.15)"/>
+          <circle cx="0" cy="0" r="1.3" fill="rgba(148, 163, 184, 0.14)"/>
         </pattern>
-
-        <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0284c7"/>
-          <stop offset="100%" stop-color="#2563eb"/>
-        </linearGradient>
-
-        <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-        </filter>
       </defs>
 
-      <!-- Rejilla de Fondo -->
-      <rect width="100%" height="100%" fill="url(#grid)" />
+      <rect x="-2000" y="-2000" width="6000" height="6000" fill="url(#grid)" />
 
-      <!-- Capa 1: Aristas / Tramos -->
+      <!-- Capa 1: tramos -->
       <g class="edges-layer">
         @for (tramo of redService.tramos(); track tramo.id) {
           @let c1 = getCoordenadaParada(tramo.origen);
           @let c2 = getCoordenadaParada(tramo.destino);
           @let conectado = esTramoConectado(tramo);
-          @let comparada = tramo.abierto ? comp.claseTramo(tramo) : null;
-          @let traza = tramo.abierto && !comp.activo() ? rep.claseTramo(tramo.origen, tramo.destino) : null;
+          @let comparada = claseComparacion(tramo);
+          @let traza = tramo.abierto && modoTraza() ? rep.claseTramo(tramo.origen, tramo.destino) : null;
+          @let dibujar = traza === 'camino' || comparada === 'alterna';
 
           <line [attr.x1]="c1.x"
                 [attr.y1]="c1.y"
                 [attr.x2]="c2.x"
                 [attr.y2]="c2.y"
+                [attr.pathLength]="dibujar ? 1 : null"
+                [style.animation-delay]="traza === 'camino' ? retardoCamino(tramo.origen, tramo.destino) : null"
                 class="tramo-line"
                 [class.tramo-abierto]="tramo.abierto"
                 [class.tramo-cerrado]="!tramo.abierto"
@@ -117,29 +79,28 @@
         }
       </g>
 
-      <!-- Capa 2: Etiquetas de Peso Anticolisión (RF-02) -->
-      <g class="weights-layer">
-        @for (etiqueta of etiquetasPeso(); track etiqueta.tramoId) {
-          <g [attr.transform]="'translate(' + etiqueta.x + ',' + etiqueta.y + ')'"
-             class="weight-badge-group">
-            <rect x="-13" y="-8.5" width="26" height="17" rx="5"
-                  class="weight-badge-bg"
-                  [class.badge-closed]="!etiqueta.abierto" />
-            <text x="0" y="3.5" text-anchor="middle"
-                  class="weight-badge-text"
-                  [class.text-closed]="!etiqueta.abierto">
-              {{ etiqueta.peso }}m
-            </text>
-          </g>
-        }
-      </g>
+      <!-- Capa 2: pesos (minutos), ocultos salvo que se pidan -->
+      @if (pesosVisibles()) {
+        <g class="weights-layer entrar-svg">
+          @for (etiqueta of etiquetasPeso(); track etiqueta.tramoId) {
+            <g [attr.transform]="'translate(' + etiqueta.x + ',' + etiqueta.y + ')'" class="weight-badge-group">
+              <rect x="-13" y="-8.5" width="26" height="17" rx="5"
+                    class="weight-badge-bg" [class.badge-closed]="!etiqueta.abierto" />
+              <text x="0" y="3.5" text-anchor="middle"
+                    class="weight-badge-text" [class.text-closed]="!etiqueta.abierto">{{ etiqueta.peso }}</text>
+            </g>
+          }
+        </g>
+      }
 
-      <!-- Capa 3: Nodos / Paradas -->
+      <!-- Capa 3: paradas -->
       <g class="nodes-layer">
         @for (parada of redService.paradas(); track parada.id) {
           @let seleccionado = paradaSeleccionada()?.id === parada.id;
-          @let estadoTraza = rep.estadoDe(parada.id);
-          @let valorTraza = rep.valorDe(parada.id);
+          @let estadoTraza = modoTraza() ? rep.estadoDe(parada.id) : null;
+          @let valorTraza = modoTraza() ? rep.valorDe(parada.id) : null;
+          @let enRuta = modoTraza() && rep.enCamino(parada.id);
+          @let rutaComparada = modoComparar() ? comp.claseParada(parada.id) : null;
 
           <g class="node-group"
              [attr.transform]="'translate(' + parada.x + ',' + parada.y + ')'"
@@ -150,7 +111,7 @@
             }
 
             @if (estadoTraza === 'actual') {
-              <circle r="21" class="node-halo halo-traza-actual" />
+              <circle r="22" class="node-halo halo-traza-actual" />
             }
 
             <circle r="14"
@@ -159,78 +120,68 @@
                     [class.node-traza-actual]="estadoTraza === 'actual'"
                     [class.node-traza-cerrada]="estadoTraza === 'cerrada'"
                     [class.node-traza-frontera]="estadoTraza === 'frontera'"
-                    [class.node-traza-camino]="rep.enCamino(parada.id)"
-                    filter="url(#glow)" />
+                    [class.node-traza-camino]="enRuta"
+                    [class.node-comp-original]="rutaComparada === 'original'"
+                    [class.node-comp-alterna]="rutaComparada === 'alterna'" />
 
-            <!-- Valor tentativo en este paso del reproductor (distancia, nivel o profundidad) -->
-            @if (valorTraza !== null) {
-              <g class="traza-valor" [class.traza-valor-actual]="estadoTraza === 'actual'" transform="translate(0,-25)">
-                <rect x="-14" y="-9" width="28" height="16" rx="5" />
-                <text x="0" y="3" text-anchor="middle">{{ valorTraza }}</text>
-              </g>
-            }
-
-            <!-- ID numérico de la parada -->
-            <text x="0" y="4" text-anchor="middle" class="node-id">
+            <text x="0" y="4" text-anchor="middle" class="node-id"
+                  [class.node-id-oscuro]="estadoTraza === 'actual' || estadoTraza === 'cerrada'">
               {{ parada.id }}
             </text>
 
-            <!-- Etiqueta con nombre de la parada -->
-            <text x="0" y="26" text-anchor="middle" class="node-label">
-              {{ parada.nombre | slice:0:18 }}
+            <text x="0" y="31" text-anchor="middle" class="node-label">
+              {{ parada.nombre | slice:0:20 }}
             </text>
+
+            <!-- Valor del reproductor en este paso: distancia, nivel o profundidad -->
+            @if (valorTraza !== null) {
+              <g class="traza-valor" [class.traza-valor-actual]="estadoTraza === 'actual'"
+                 [class.traza-valor-cerrada]="estadoTraza === 'cerrada'" transform="translate(0,-29)">
+                <rect x="-15" y="-9" width="30" height="17" rx="5" />
+                <text x="0" y="3.5" text-anchor="middle">{{ valorTraza }}</text>
+              </g>
+            }
           </g>
         }
       </g>
     </svg>
 
-    <!-- Inspector de la Estación al Seleccionar Parada -->
+    <!-- Detalle de la parada seleccionada -->
     @if (paradaSeleccionada(); as p) {
-      <div class="node-inspector-card">
+      <div class="node-inspector-card entrar">
         <div class="inspector-header">
-          <div class="inspector-badge">#{{ p.id }}</div>
+          <div class="inspector-badge num">{{ p.id }}</div>
           <div class="inspector-title-area">
             <h4>{{ p.nombre }}</h4>
-            <span class="inspector-coords">Coord: ({{ p.x }}, {{ p.y }})</span>
+            <span class="inspector-coords num">x {{ p.x }} · y {{ p.y }}</span>
           </div>
-          <button class="close-btn" (click)="paradaSeleccionada.set(null)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button type="button" class="close-btn" (click)="paradaSeleccionada.set(null)" aria-label="Cerrar detalle de la parada">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
-
         <div class="inspector-body">
-          <div class="connections-list">
-            <span class="conn-title">Tramos Conectados:</span>
-            <div class="conn-items">
-              @for (item of getVecinos(p.id); track item.tramo.id) {
-                <div class="conn-badge" [class.conn-closed]="!item.tramo.abierto">
-                  <span>&harr; {{ item.parada.nombre }}</span>
-                  <span class="conn-weight">{{ item.tramo.peso }} min</span>
-                </div>
-              }
-            </div>
+          <span class="conn-title">Tramos conectados</span>
+          <div class="conn-items">
+            @for (item of getVecinos(p.id); track item.tramo.id) {
+              <div class="conn-badge" [class.conn-closed]="!item.tramo.abierto">
+                <span>{{ item.parada.nombre }}</span>
+                <span class="conn-weight num">{{ item.tramo.peso }} min</span>
+              </div>
+            }
           </div>
         </div>
       </div>
     }
+  </div>
 
-    <!-- Leyenda de Colores -->
-    <div class="map-legend">
-      <div class="legend-item">
-        <span class="legend-color legend-open"></span>
-        <span>Vía Normal</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-color legend-closed"></span>
-        <span>Cierre Vial (Mantenimiento)</span>
-      </div>
-      <div class="legend-item">
-        <span class="legend-badge">10m</span>
-        <span>Costo (min)</span>
-      </div>
-    </div>
+  <!-- Leyenda: cambia con lo que muestra el mapa -->
+  <div class="map-legend">
+    @for (item of leyenda(); track item.texto) {
+      <span class="legend-item"><span [class]="'ley ' + item.muestra" aria-hidden="true"></span>{{ item.texto }}</span>
+    }
+    <span class="legend-hint">Arrastra para mover · rueda para acercar · clic en una parada para ver sus tramos</span>
   </div>
 </div>

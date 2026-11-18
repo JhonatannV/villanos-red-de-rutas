@@ -4,6 +4,7 @@ import { Tramo } from '../../core/models/red.model';
 import { ReproductorService } from '../reproductor.service';
 import { claveTramo } from '../traza.builder';
 import { ComparadorService, RutaComparada, textoDelta } from './comparador.service';
+import { PanelService } from '../../core/services/panel.service';
 
 interface OpcionTramo {
   tramo: Tramo;
@@ -24,6 +25,7 @@ export class ComparadorComponent {
   readonly redService = inject(RedService);
   readonly rep = inject(ReproductorService);
   readonly comp = inject(ComparadorService);
+  readonly panel = inject(PanelService);
 
   readonly textoDelta = textoDelta;
   readonly tramoElegido = signal<number | null>(null);
@@ -98,6 +100,14 @@ export class ComparadorComponent {
     this.rep.irFin();
     this.comp.comparar(o, tramo, this.redService.redActual()?.redId ?? 1)
       .subscribe({ error: () => undefined });
+  }
+
+  /** Cifra corta para el número grande: "+6 min", "−2 min" o "sin camino". */
+  deltaCorto(delta: number | null): string {
+    if (delta === null) {
+      return 'sin camino';
+    }
+    return `${delta > 0 ? '+' : delta < 0 ? '−' : '±'}${Math.abs(delta)} min`;
   }
 
   caminoTexto(camino: number[]): string {
