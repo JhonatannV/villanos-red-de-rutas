@@ -90,6 +90,10 @@ docker compose ps
 docker compose down
 ```
 
+**En Windows, con doble clic:** `scripts\arrancar.bat` hace todo lo anterior y deja la aplicación lista. Abre Docker Desktop si está cerrado, corre `docker compose up -d`, espera a que los 5 servicios estén sanos, calcula la primera ruta para calentar el sistema y abre `http://localhost:4200`. Antes de abrir Docker, limpia los sockets que quedan cuando Windows se apaga o hiberna con Docker abierto, que causan el error `rename ... .sock.stale: The file cannot be accessed by the system`. `scripts\detener.bat` apaga todo.
+
+**Demo de la biblioteca en C por JNA:** con el sistema arriba, `.\scripts\demo_biblioteca.ps1` muestra en cinco pasos que `libgrafo.so` está en el contenedor, que JNA la cargó, la misma ruta calculada por C y por Java, el código −1 de C con un tramo cerrado y el rechazo de una parada inexistente.
+
 ### 2. Despliegue con Kubernetes (K8s)
 
 Para desplegar sobre un clúster de Kubernetes mediante Kustomize:
