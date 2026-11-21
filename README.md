@@ -76,8 +76,10 @@ Para arrancar el sistema en una máquina limpia se requiere únicamente:
 En la raíz del proyecto, ejecute un solo comando para compilar y levantar todo el ecosistema con límites de CPU y memoria:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
+
+`--build` recompila las imágenes cuyo código cambió (lo demás sale de la caché de Docker). Sin esa opción, `docker compose up -d` reutiliza las imágenes que ya existen y, después de un `git pull`, puede quedar corriendo una versión vieja, por ejemplo el frontend sin los últimos cambios.
 
 Para verificar que los 5 contenedores estén saludables y en ejecución:
 
@@ -90,7 +92,7 @@ docker compose ps
 docker compose down
 ```
 
-**En Windows, con doble clic:** `scripts\arrancar.bat` hace todo lo anterior y deja la aplicación lista. Abre Docker Desktop si está cerrado, corre `docker compose up -d`, espera a que los 5 servicios estén sanos, calcula la primera ruta para calentar el sistema y abre `http://localhost:4200`. Antes de abrir Docker, limpia los sockets que quedan cuando Windows se apaga o hiberna con Docker abierto, que causan el error `rename ... .sock.stale: The file cannot be accessed by the system`. `scripts\detener.bat` apaga todo.
+**En Windows, con doble clic:** `scripts\arrancar.bat` hace todo lo anterior y deja la aplicación lista. Abre Docker Desktop si está cerrado, corre `docker compose up -d --build`, espera a que los 5 servicios estén sanos, calcula la primera ruta para calentar el sistema y abre `http://localhost:4200`. Antes de abrir Docker, limpia los sockets que quedan cuando Windows se apaga o hiberna con Docker abierto, que causan el error `rename ... .sock.stale: The file cannot be accessed by the system`. `scripts\detener.bat` apaga todo.
 
 **Demo de la biblioteca en C por JNA:** con el sistema arriba, `.\scripts\demo_biblioteca.ps1` muestra en cinco pasos que `libgrafo.so` está en el contenedor, que JNA la cargó, la misma ruta calculada por C y por Java, el código −1 de C con un tramo cerrado y el rechazo de una parada inexistente.
 

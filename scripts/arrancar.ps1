@@ -1,6 +1,7 @@
 ﻿# Arranca Red de Rutas completo y deja la app lista para la demo.
 #   1. Abre Docker Desktop si no esta corriendo y espera al motor.
-#   2. docker compose up -d en el repo.
+#   2. docker compose up -d --build en el repo: recompila lo que cambio en el codigo,
+#      para no levantar una imagen vieja. Lo que no cambio sale de la cache.
 #   3. Espera a que los 5 contenedores esten sanos.
 #   4. Calienta el sistema: pide la primera ruta hasta que responda 200.
 #   5. Abre la app en el navegador.
@@ -79,11 +80,11 @@ if (-not (MotorListo)) {
 Ok "motor de Docker listo"
 
 # ---------- 2. Levantar ----------
-Paso "2/5 docker compose up -d"
+Paso "2/5 docker compose up -d --build (recompila lo que haya cambiado)"
 Push-Location $Repo
-try { docker compose up -d; if ($LASTEXITCODE -ne 0) { Falla "docker compose up fallo (mira el mensaje de arriba)." } }
+try { docker compose up -d --build; if ($LASTEXITCODE -ne 0) { Falla "docker compose up fallo (mira el mensaje de arriba)." } }
 finally { Pop-Location }
-Ok "contenedores creados"
+Ok "imagenes al dia y contenedores creados"
 
 # ---------- 3. Esperar a que esten sanos ----------
 Paso "3/5 Esperando a que los 5 servicios esten sanos"
